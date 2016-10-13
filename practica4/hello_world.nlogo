@@ -2,6 +2,11 @@ to hello_world_please
   show "Hello World"
 end
 
+to do_box_please
+  pd repeat 4 [fd 5 rt 90] pu
+end
+
+
 @#$#@#$#@
 GRAPHICS-WINDOW
 210
