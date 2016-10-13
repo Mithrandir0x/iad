@@ -2,6 +2,10 @@ to hello_world_please
   show "Hello World"
 end
 
+to hello_world
+  show "you fugging wut m8"
+end
+
 to do_box_please
   pen-down
   repeat 4 [
