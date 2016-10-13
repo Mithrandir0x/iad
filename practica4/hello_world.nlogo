@@ -3,9 +3,12 @@ to hello_world_please
 end
 
 to do_box_please
-  pd repeat 4 [fd 5 rt 90] pu
+  pen-down
+  repeat 4 [
+    forward 5
+    right 90 ]
+  pen-up
 end
-
 
 @#$#@#$#@
 GRAPHICS-WINDOW
