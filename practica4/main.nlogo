@@ -221,6 +221,14 @@ patches
 HORIZONTAL
 
 @#$#@#$#@
+## ESTADO DE LA PRACTICA
+
+1. Implementacion basica [OK]
+
+2. Hormigas [Mas o menos]
+
+3. Feromonas [Not yet]
+
 ## WHAT IS IT?
 
 (a general understanding of what the model is trying to show or explain)
