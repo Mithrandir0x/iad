@@ -1,64 +1,142 @@
-to hello_world_please
-  show "Hello World"
-end
+;; GLOBAL STUFF
+breed[ants ant]
+patches-own[pheromones]
+globals
+[
+  VERBOSE
+]
 
-to hello_world
-  show "you fugging wut m8"
-end
 
-to do_box_please
-  pen-down
-  repeat 4 [
-    forward 5
-    right 90 ]
-  pen-up
-end
-
+;; SETUP PROCEDURE
 to setup
  clear-all
- show "World is clear now"
+ reset-ticks
+ ;; globals
+ set VERBOSE false
+ ;; ants config
+ create-ants population [
+   set color grey
+   setxy random-xcor random-ycor ;; initial random position
+   set shape "bug"
+ ]
+
+ ;; patches config
+ ask patches [ set pcolor green  set pheromones 0]
+
 end
 
-to comenzar_
-  ca                                                        ;; clear-all
-  ask patches [set pcolor blue]                    ;; mundo azul
-  crt 1
-  crt 1                                                     ;; creamos una tortuga
-  ask turtles [set color orange set heading 0 ] ;; color naranja, orientación "arriba"
-  crt 1 [set color green]
-  ask turtles [pd repeat 4 [fd 5 rt 90] pu]      ;; dibujamos el cuadrado
+to run_test ;; run forever function
+  ask ants [act]
 end
 
-to comenzar
-  ca
-  ask patches [ set pcolor green ]
-  ask patch 0 0 [ set pcolor black] ;; changes patch color or whateva
-  crt 10
-  ask turtles [ fd 2 set color red] ;; asks all of them to do something
-  ask turtle 1 [  ;; creates a turtle with some conditions or with some initial orders
-    fd 10
-    set color orange
-    set shape "turtle"
-    show who
+to act
+  think ;; chooses where to look
+  walk ;; walks
+  drop ;; drops pheromones
+end
+
+to think
+  let new-patch best_patch
+  type "Ant " type who type " facing patch " type new-patch
+  face new-patch
+end
+
+to-report best_patch
+  let best-patch-value 0
+  let counter 1
+  let list-patches []
+  let temp-patch patch-ahead 1
+  let degrees 45
+
+
+  ;; check and recheck and optimize
+  ;; in case counter is higher than 1
+  ;; won't work as expected
+  while [counter <= smell-range]
+  [
+    ;; checks patch ahead
+    set temp-patch patch-ahead counter
+    ifelse [pheromones] of  temp-patch > best-patch-value
+    [
+      ;; empty list and add temp-patch
+      set list-patches []
+      set list-patches lput temp-patch list-patches
+      ;; set best value
+      set best-patch-value [pheromones] of temp-patch
+    ]
+    [
+      if [pheromones] of temp-patch = best-patch-value
+      [
+        ;; add patch to a list
+        set list-patches lput temp-patch list-patches
+      ]
+    ]
+
+    ;; checks patch left-and-ahead
+    set temp-patch patch-left-and-ahead degrees counter
+    ifelse [pheromones] of temp-patch > best-patch-value
+    [
+      ;; empty list
+      set list-patches []
+      set list-patches lput temp-patch list-patches
+      ;; set best value
+      set best-patch-value [pheromones] of temp-patch
+    ]
+    [
+      if [pheromones] of temp-patch = best-patch-value
+      [
+        ;; add patch to a list
+        set list-patches lput temp-patch list-patches
+      ]
+    ]
+
+    ;; checks patch left-and-ahead
+    set temp-patch patch-right-and-ahead degrees counter
+    ifelse [pheromones] of temp-patch > best-patch-value
+    [
+      ;; empty list
+      set list-patches []
+      set list-patches lput temp-patch list-patches
+      ;; set best value
+      set best-patch-value [pheromones] of temp-patch
+    ]
+    [
+      if [pheromones] of temp-patch = best-patch-value
+      [
+        ;; add patch to a list
+        set list-patches lput temp-patch list-patches
+      ]
+    ]
+
+    set counter counter + 1
   ]
+  report one-of list-patches
+
 end
 
-to test_with
-  ask turtles with [color = orange] [ fd 6 ] ;; asks only oranges to do something
+
+
+to walk
+  forward 1
 end
 
-to test_type
-  type "Soy la tortuga " type [who] of turtle 0 type " y mi tamaño es " print [size] of turtle 0
+to drop
+  ;; increase the pheromones of the current path by 2
+  ask patch-here
+  [
+    set pheromones pheromones + 2
+  ]
+
 end
 @#$#@#$#@
 GRAPHICS-WINDOW
-632
+492
 10
-1248
-681
-17
-18
-17.3143
+931
+470
+16
+16
+13.0
 1
 10
 1
@@ -68,10 +146,10 @@ GRAPHICS-WINDOW
 1
 1
 1
--17
-17
--18
-18
+-16
+16
+-16
+16
 0
 0
 1
@@ -79,10 +157,10 @@ ticks
 30.0
 
 BUTTON
-22
-17
-96
-50
+25
+34
+99
+67
 Setup
 setup
 NIL
@@ -95,31 +173,29 @@ NIL
 NIL
 1
 
-BUTTON
-132
-17
-234
-50
-Comenzar
-comenzar
-NIL
+SLIDER
+113
+33
+285
+66
+population
+population
 1
-T
-OBSERVER
-NIL
-C
-NIL
-NIL
+500
+200
 1
+1
+ants
+HORIZONTAL
 
 BUTTON
-277
-18
-424
-51
-Caminar orange
-test_with
-NIL
+25
+75
+98
+108
+Run
+run_test
+T
 1
 T
 OBSERVER
@@ -129,22 +205,20 @@ NIL
 NIL
 1
 
-BUTTON
-192
-172
-290
-205
-test_type
-test_type\n
-NIL
+SLIDER
+115
+79
+319
+112
+smell-range
+smell-range
 1
-T
-OBSERVER
-NIL
-NIL
-NIL
-NIL
+10
 1
+1
+1
+patches
+HORIZONTAL
 
 @#$#@#$#@
 ## WHAT IS IT?
