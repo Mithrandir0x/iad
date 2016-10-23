@@ -4,6 +4,7 @@ patches-own[pheromones]
 globals
 [
   VERBOSE
+  COLOR-OFFSET
 ]
 
 
@@ -13,31 +14,47 @@ to setup
  reset-ticks
  ;; globals
  set VERBOSE false
+ set COLOR-OFFSET 3
  ;; ants config
  create-ants population [
    set color grey
-   setxy random-xcor random-ycor ;; initial random position
+   ;;setxy random-xcor random-ycor ;; initial random position
+   move-to one-of patches
    set shape "bug"
  ]
 
  ;; patches config
- ask patches [ set pcolor green  set pheromones 0]
+ ask patches [
+   set pcolor [ 255 255 255 ]
+   set pheromones 0
+   ]
 
 end
 
 to run_test ;; run forever function
-  ask ants [act]
+  ;; ants do something
+  ask ants [
+    think ;; chooses where to look
+    walk ;; walks
+    drop ;; drops pheromones
+  ]
+
+  ;; patches do something
+  diffuse pheromones 1
+  ask patches[
+    set pheromones pheromones * 0.9
+    set pcolor calc_color pheromones
+  ]
+  tick
 end
 
 to act
-  think ;; chooses where to look
-  walk ;; walks
-  drop ;; drops pheromones
+
 end
 
 to think
   let new-patch best_patch
-  type "Ant " type who type " facing patch " type new-patch
+  ;;type "Ant " type who type " facing patch " type new-patch
   face new-patch
 end
 
@@ -114,6 +131,9 @@ to-report best_patch
 
 end
 
+to-report calc_color [patch-pheromones]
+  report (list  255 (255 - (patch-pheromones * COLOR-OFFSET)) (255 - (patch-pheromones * COLOR-OFFSET)) )
+end
 
 
 to walk
@@ -128,15 +148,17 @@ to drop
   ]
 
 end
+
+;;;
 @#$#@#$#@
 GRAPHICS-WINDOW
-492
+361
 10
-931
-470
-16
-16
-13.0
+1495
+1165
+100
+100
+5.59204
 1
 10
 1
@@ -146,10 +168,10 @@ GRAPHICS-WINDOW
 1
 1
 1
--16
-16
--16
-16
+-100
+100
+-100
+100
 0
 0
 1
@@ -182,7 +204,7 @@ population
 population
 1
 500
-200
+500
 1
 1
 ants
