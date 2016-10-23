@@ -43,7 +43,8 @@ to run_test ;; run forever function
   diffuse pheromones 1
   ask patches[
     set pheromones pheromones * 0.9
-    set pcolor calc_color pheromones
+    ;;set pcolor calc_color pheromones
+    set pcolor scale-color red pheromones 50 0
   ]
   tick
 end
@@ -154,10 +155,10 @@ end
 GRAPHICS-WINDOW
 361
 10
-1495
-1165
-100
-100
+935
+605
+50
+50
 5.59204
 1
 10
@@ -168,10 +169,10 @@ GRAPHICS-WINDOW
 1
 1
 1
--100
-100
--100
-100
+-50
+50
+-50
+50
 0
 0
 1
@@ -198,13 +199,13 @@ NIL
 SLIDER
 113
 33
-285
+293
 66
 population
 population
 1
-500
-500
+2000
+231
 1
 1
 ants
