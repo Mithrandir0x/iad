@@ -69,7 +69,7 @@ to run_test ;; run forever function
     think ;; chooses where to look
     walk ;; walks
     drop ;; drops pheromones
-    set_cluster_id ;; cluster identification
+    ;; set_cluster_id ;; cluster identification
   ]
 
   ;; patches do something
