@@ -40,9 +40,9 @@ to run_test ;; run forever function
   ]
 
   ;; patches do something
-  diffuse pheromones 1
+  diffuse pheromones diffusion
   ask patches[
-    set pheromones pheromones * 0.9
+    set pheromones pheromones * ( 1 - evaporation) ;;pay attention
     ;;set pcolor calc_color pheromones
     set pcolor scale-color red pheromones 50 0
   ]
@@ -199,7 +199,7 @@ NIL
 SLIDER
 113
 33
-293
+323
 66
 population
 population
@@ -229,10 +229,10 @@ NIL
 1
 
 SLIDER
-115
-79
-319
-112
+113
+75
+324
+108
 smell-range
 smell-range
 1
@@ -241,6 +241,36 @@ smell-range
 1
 1
 patches
+HORIZONTAL
+
+SLIDER
+113
+118
+324
+151
+diffusion
+diffusion
+0
+1
+0.4
+0.01
+1
+NIL
+HORIZONTAL
+
+SLIDER
+113
+167
+323
+200
+evaporation
+evaporation
+0
+1
+0.04
+0.01
+1
+NIL
 HORIZONTAL
 
 @#$#@#$#@
