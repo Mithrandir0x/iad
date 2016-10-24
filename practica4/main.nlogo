@@ -5,6 +5,9 @@ globals
 [
   VERBOSE
   COLOR-OFFSET
+  MIN-ANGLE
+  MAX-ANGLE
+  INC-ANGLE
 ]
 
 
@@ -15,6 +18,9 @@ to setup
  ;; globals
  set VERBOSE false
  set COLOR-OFFSET 3
+ set MIN-ANGLE -45
+ set MAX-ANGLE 45
+ set INC-ANGLE 5
  ;; ants config
  create-ants population [
    set color grey
@@ -49,17 +55,22 @@ to run_test ;; run forever function
   tick
 end
 
-to act
-
-end
 
 to think
-  let new-patch best_patch
+  let new-patch patch-ahead 1 ;; default value needed
+
+  ifelse smell-method = "basic" [ set new-patch best_patch smell-range ]
+[ ifelse smell-method = "scan" [ set new-patch scan_best_patch smell-range ] ;; copy this block to create a new case
+[ ;; default case
+]] ;; add an ] if you create a new case
+
+  ;;let new-patch best_patch
+  ;;let new-patch scan_best_patch smell-range
   ;;type "Ant " type who type " facing patch " type new-patch
   face new-patch
 end
 
-to-report best_patch
+to-report best_patch [ ahead ]
   let best-patch-value 0
   let counter 1
   let list-patches []
@@ -70,7 +81,7 @@ to-report best_patch
   ;; check and recheck and optimize
   ;; in case counter is higher than 1
   ;; won't work as expected
-  while [counter <= smell-range]
+  while [counter <= ahead]
   [
     ;; checks patch ahead
     set temp-patch patch-ahead counter
@@ -132,14 +143,61 @@ to-report best_patch
 
 end
 
-to-report calc_color [patch-pheromones]
-  report (list  255 (255 - (patch-pheromones * COLOR-OFFSET)) (255 - (patch-pheromones * COLOR-OFFSET)) )
+
+to-report scan_best_patch[ ahead ]
+  ;; This function looks for the best patch
+  ;; performing an angular search from -45 degrees to 45
+  ;; from patch-ahead 1 to patch-ahead ahead
+  let best-patch-value 0
+  let counter 1
+  let list-patches []
+  let temp-patch patch-ahead 1
+  let current-angle 0
+
+
+  while [counter <= smell-range]
+  [
+    set current-angle MIN-ANGLE
+    while [ current-angle <= MAX-ANGLE]
+    [
+
+      ;; checks patch right-and-ahead
+      set temp-patch patch-right-and-ahead current-angle counter
+      if  not member? temp-patch list-patches
+      ;; checks if that patch is already in the list
+      ;; it could happen
+      [
+        ifelse [pheromones] of temp-patch > best-patch-value
+        [
+          ;; empty list
+          set list-patches []
+          set list-patches lput temp-patch list-patches
+          ;; set best value
+          set best-patch-value [pheromones] of temp-patch
+        ]
+        [
+          if [pheromones] of temp-patch = best-patch-value
+          [
+            ;; add patch to a list
+            set list-patches lput temp-patch list-patches
+          ]
+        ]
+      ]
+
+      set current-angle current-angle + INC-ANGLE
+    ]
+    set counter counter + 1
+  ]
+  report one-of list-patches
 end
+
 
 
 to walk
   forward 1
 end
+
+
 
 to drop
   ;; increase the pheromones of the current path by 2
@@ -205,7 +263,7 @@ population
 population
 1
 2000
-231
+565
 1
 1
 ants
@@ -237,7 +295,7 @@ smell-range
 smell-range
 1
 10
-1
+3
 1
 1
 patches
@@ -267,11 +325,21 @@ evaporation
 evaporation
 0
 1
-0.04
+0.1
 0.01
 1
 NIL
 HORIZONTAL
+
+CHOOSER
+113
+212
+323
+257
+smell-method
+smell-method
+"basic" "scan"
+1
 
 @#$#@#$#@
 ## ESTADO DE LA PRACTICA
