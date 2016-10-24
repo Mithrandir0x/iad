@@ -1,5 +1,6 @@
 ;; GLOBAL STUFF
 breed[ants ant]
+ants-own[cluster_id]
 patches-own[pheromones]
 globals
 [
@@ -8,6 +9,20 @@ globals
   MIN-ANGLE
   MAX-ANGLE
   INC-ANGLE
+
+  ;; DBSCAN RELATED GLOBAL VARIABLES
+  ;;   CLUSTERIZED ITEMS STATES
+  DBSCAN_UNCLASSIFIED
+  DBSCAN_NOISE
+  DBSCAN_CORE_POINT
+  DBSCAN_NOT_CORE_POINT
+  DBSCAN_SUCCESS
+  ;;   CLUSTER CONFIGURATION
+  DBSCAN_EPSILON
+  DBSCAN_MIN_POINTS
+  DBSCAN_AGENT_CENTROID_COLOR
+  ;;   RUNNING VARIABLES
+  DBSCAN_CLUSTER_ID
 ]
 
 
@@ -21,6 +36,16 @@ to setup
  set MIN-ANGLE -45
  set MAX-ANGLE 45
  set INC-ANGLE 5
+ ;; dbscan stuff
+ set DBSCAN_UNCLASSIFIED -1
+ set DBSCAN_NOISE -2
+ set DBSCAN_CORE_POINT 1
+ set DBSCAN_NOT_CORE_POINT 0
+ set DBSCAN_SUCCESS 0
+ set DBSCAN_EPSILON 20
+ set DBSCAN_MIN_POINTS 1
+ set DBSCAN_CLUSTER_ID 0
+ set DBSCAN_AGENT_CENTROID_COLOR [ 255 0 255 255 ]
  ;; ants config
  create-ants population [
    set color grey
@@ -38,11 +63,13 @@ to setup
 end
 
 to run_test ;; run forever function
+  set DBSCAN_CLUSTER_ID 0
   ;; ants do something
   ask ants [
     think ;; chooses where to look
     walk ;; walks
     drop ;; drops pheromones
+    set_cluster_id ;; cluster identification
   ]
 
   ;; patches do something
@@ -197,8 +224,6 @@ to walk
   forward 1
 end
 
-
-
 to drop
   ;; increase the pheromones of the current path by 2
   ask patch-here
@@ -206,6 +231,73 @@ to drop
     set pheromones pheromones + 2
   ]
 
+end
+to set_cluster_id
+  let cluster_state dbscan_expand
+  ;type (word "This Ant [" who "] cluster state [" cluster_state "]\n")
+  if cluster_state = DBSCAN_CORE_POINT [
+    set DBSCAN_CLUSTER_ID ( DBSCAN_CLUSTER_ID + 1 )
+    set color DBSCAN_AGENT_CENTROID_COLOR
+  ]
+end
+
+to-report dbscan_expand
+  set cluster_id DBSCAN_NOT_CORE_POINT
+  let this who
+  let seeds dbscan_get_epsilon_neighbours DBSCAN_EPSILON this
+
+  ifelse length seeds < DBSCAN_MIN_POINTS [
+    set cluster_id DBSCAN_NOISE
+  ] [
+    foreach seeds [
+      ask ant ?1 [
+        set cluster_id DBSCAN_CLUSTER_ID
+      ]
+    ]
+    foreach seeds [
+      dbscan_spread seeds ?1
+    ]
+    set cluster_id DBSCAN_CORE_POINT
+  ]
+
+  report cluster_id
+end
+
+to dbscan_spread [seeds seed_agent_id]
+  ;type (word "Calculating spread from [" seed_agent_id "] with seeds [" seeds "] \n")
+  let spread dbscan_get_epsilon_neighbours DBSCAN_EPSILON seed_agent_id
+  if length spread >= DBSCAN_MIN_POINTS [
+    foreach spread [
+      ask ant ?1 [
+        if cluster_id = DBSCAN_NOISE or cluster_id = DBSCAN_UNCLASSIFIED [
+          set cluster_id DBSCAN_CLUSTER_ID
+        ]
+      ]
+    ]
+  ]
+end
+
+to-report dbscan_get_epsilon_neighbours [epsilon this]
+  let curr_x xcor
+  let curr_y ycor
+  let list_agents []
+  ask ants [
+    let ant_x xcor
+    let ant_y xcor
+    let i_ant who
+    let dist dbscan_euclidean_dist curr_x curr_y ant_x ant_y
+    if this != i_ant and dist < epsilon [
+      ;type (word "This Ant [" this "] at [" curr_x "," curr_y "] ")
+      ;type (word "Iter Ant [" i_ant "] at [" ant_x "," ant_y "] ")
+      ;type (word "Euclidean distance [" dist "]\n")
+      set list_agents lput i_ant list_agents
+    ]
+  ]
+  report list_agents
+end
+
+to-report dbscan_euclidean_dist [a_ant_x a_ant_y b_ant_x b_ant_y]
+  report sqrt ( ( ( a_ant_x - b_ant_x ) ^ 2 ) + ( ( a_ant_y - b_ant_y ) ^ 2 ) )
 end
 
 ;;;
@@ -263,7 +355,7 @@ population
 population
 1
 2000
-565
+100
 1
 1
 ants
@@ -340,6 +432,35 @@ smell-method
 smell-method
 "basic" "scan"
 1
+
+PLOT
+121
+299
+321
+449
+Number of Clusters
+ticks
+DBSCAN_CLUSTER_ID
+0.0
+10.0
+0.0
+10.0
+true
+false
+"" ""
+PENS
+"default" 1.0 0 -16777216 true "" "plot DBSCAN_CLUSTER_ID"
+
+MONITOR
+149
+478
+314
+523
+Current Number of Clusters
+DBSCAN_CLUSTER_ID
+17
+1
+11
 
 @#$#@#$#@
 ## ESTADO DE LA PRACTICA
