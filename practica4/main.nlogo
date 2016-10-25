@@ -5,10 +5,7 @@ patches-own[pheromones]
 globals
 [
   VERBOSE
-  COLOR-OFFSET
-  MIN-ANGLE
-  MAX-ANGLE
-  INC-ANGLE
+  STEP-ANGLE
 
   ;; DBSCAN RELATED GLOBAL VARIABLES
   ;;   CLUSTERIZED ITEMS STATES
@@ -34,10 +31,7 @@ to setup
  reset-ticks
  ;; globals
  set VERBOSE false
- set COLOR-OFFSET 3
- set MIN-ANGLE -45
- set MAX-ANGLE 45
- set INC-ANGLE 5
+ set STEP-ANGLE 10
  ;; dbscan stuff
  set DBSCAN_UNCLASSIFIED -1
  set DBSCAN_NOISE -2
@@ -84,10 +78,10 @@ to run_test ;; run forever function
     set pcolor scale-color red pheromones 50 0
   ]
 
-  if CLUSTERIZE
+  if CLUSTERIZE and ticks mod update-clusters-each = 0
   [
-    run_dbscan_a
-    ;;dbscan_run
+    ;;run_dbscan_a
+    dbscan_run
   ]
 
 
@@ -196,8 +190,8 @@ to-report scan_best_patch[ ahead ]
 
   while [counter <= smell-range]
   [
-    set current-angle MIN-ANGLE
-    while [ current-angle <= MAX-ANGLE]
+    set current-angle (smell-angle * -1)
+    while [ current-angle <= smell-angle]
     [
 
       ;; checks patch right-and-ahead
@@ -223,7 +217,7 @@ to-report scan_best_patch[ ahead ]
         ]
       ]
 
-      set current-angle current-angle + INC-ANGLE
+      set current-angle current-angle + STEP-ANGLE
     ]
     set counter counter + 1
   ]
@@ -469,7 +463,7 @@ population
 population
 1
 2000
-145
+514
 1
 1
 ants
@@ -501,7 +495,7 @@ smell-range
 smell-range
 1
 10
-5
+4
 1
 1
 patches
@@ -516,7 +510,7 @@ diffusion
 diffusion
 0
 1
-0.9
+0.5
 0.01
 1
 NIL
@@ -531,7 +525,7 @@ evaporation
 evaporation
 0
 1
-0.13
+0.62
 0.01
 1
 NIL
@@ -545,13 +539,13 @@ CHOOSER
 smell-method
 smell-method
 "basic" "scan"
-1
+0
 
 PLOT
-114
-306
-314
-456
+116
+378
+316
+528
 Number of Clusters
 ticks
 DBSCAN_CLUSTER_ID
@@ -566,10 +560,10 @@ PENS
 "default" 1.0 0 -16777216 true "" "plot DBSCAN_CLUSTER_ID"
 
 MONITOR
-113
-478
-278
-523
+115
+550
+280
+595
 Current Number of Clusters
 DBSCAN_CLUSTER_ID
 17
@@ -578,9 +572,9 @@ DBSCAN_CLUSTER_ID
 
 SWITCH
 114
-266
+326
 239
-299
+359
 CLUSTERIZE
 CLUSTERIZE
 0
@@ -637,7 +631,7 @@ CLUSTER_EPSILON
 CLUSTER_EPSILON
 0
 20
-10
+5
 1
 1
 NIL
@@ -652,10 +646,50 @@ MIN_CLUSTER_SIZE
 MIN_CLUSTER_SIZE
 1
 10
-10
+5
 1
 1
 NIL
+HORIZONTAL
+
+SLIDER
+113
+271
+278
+304
+smell-angle
+smell-angle
+15
+105
+46
+1
+1
+degrees
+HORIZONTAL
+
+TEXTBOX
+285
+274
+360
+292
+default 45\n
+12
+15.0
+0
+
+SLIDER
+997
+414
+1237
+447
+update-clusters-each
+update-clusters-each
+1
+10
+5
+1
+1
+ticks
 HORIZONTAL
 
 @#$#@#$#@
