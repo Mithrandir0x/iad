@@ -1,6 +1,6 @@
 ;; GLOBAL STUFF
 breed[ants ant]
-ants-own[cluster_id]
+ants-own[cluster_id visited noise]
 patches-own[pheromones]
 globals
 [
@@ -21,8 +21,10 @@ globals
   DBSCAN_EPSILON
   DBSCAN_MIN_POINTS
   DBSCAN_AGENT_CENTROID_COLOR
+  DBSCAN_NOISE_COLOR
   ;;   RUNNING VARIABLES
   DBSCAN_CLUSTER_ID
+  DBSCAN_OUTLIERS
 ]
 
 
@@ -45,13 +47,15 @@ to setup
  set DBSCAN_EPSILON 20
  set DBSCAN_MIN_POINTS 1
  set DBSCAN_CLUSTER_ID 0
+ set DBSCAN_OUTLIERS 0
  set DBSCAN_AGENT_CENTROID_COLOR [ 255 0 255 255 ]
+ set DBSCAN_NOISE_COLOR 0
  ;; ants config
  create-ants population [
-   set color grey
+   set color 5
    ;;setxy random-xcor random-ycor ;; initial random position
    move-to one-of patches
-   set shape "bug"
+   set shape "circle" ;; helps visualization
  ]
 
  ;; patches config
@@ -63,14 +67,14 @@ to setup
 end
 
 to run_test ;; run forever function
-  set DBSCAN_CLUSTER_ID 0
+
   ;; ants do something
   ask ants [
     think ;; chooses where to look
     walk ;; walks
     drop ;; drops pheromones
-    ;; set_cluster_id ;; cluster identification
   ]
+
 
   ;; patches do something
   diffuse pheromones diffusion
@@ -79,6 +83,14 @@ to run_test ;; run forever function
     ;;set pcolor calc_color pheromones
     set pcolor scale-color red pheromones 50 0
   ]
+
+  if CLUSTERIZE
+  [
+    run_dbscan_a
+    ;;dbscan_run
+  ]
+
+
   tick
 end
 
@@ -232,6 +244,97 @@ to drop
   ]
 
 end
+
+;;--------------- DBSCAN IMPLEMENTATION
+
+
+to run_dbscan_a
+  set DBSCAN_CLUSTER_ID 0
+  ask ants[ set_cluster_id ]
+end
+
+
+to dbscan_run
+  ;; from sliders
+  set DBSCAN_MIN_POINTS MIN_CLUSTER_SIZE
+  set DBSCAN_EPSILON CLUSTER_EPSILON
+
+  ;; recalc each iteration
+  set DBSCAN_CLUSTER_ID 0
+  set DBSCAN_OUTLIERS 0
+
+  ;; locals
+  let p-neighbors []
+
+  ;; reset some agent values
+  ask ants[
+    set visited false
+    set noise false
+    set cluster_id DBSCAN_UNCLASSIFIED
+  ]
+
+  ;; instead of ask ants, loops them sorted in order to help visualization
+  foreach sort-on [who] ants
+  [
+    ask ?[ ;; aks the current ant
+      if not visited
+      [
+        set visited true
+        set p-neighbors  dbscan_get_neighbors_list  DBSCAN_EPSILON self
+        ifelse length p-neighbors < DBSCAN_MIN_POINTS
+        [
+          set noise true ;; mark as noise
+          set color DBSCAN_NOISE_COLOR;;
+          set DBSCAN_OUTLIERS DBSCAN_OUTLIERS + 1
+        ]
+        [
+          set DBSCAN_CLUSTER_ID DBSCAN_CLUSTER_ID + 1
+
+          set noise false
+          set cluster_id DBSCAN_CLUSTER_ID
+          set color (cluster_id * 10) + 5 ;; 0 is black, 5 is grey, the rest are cool colors
+          dbscan_expand_cluster p-neighbors DBSCAN_EPSILON DBSCAN_MIN_POINTS DBSCAN_CLUSTER_ID
+
+        ]
+      ]
+    ]
+  ]
+end
+
+to dbscan_expand_cluster [ neighbors-list epsilon min-points new-cluster-id ]
+  let sub-neighbors-list []
+  let first-neighbor self
+
+  while [ not empty? neighbors-list]
+  [
+    ;; extracts first neighbor from the list
+    set first-neighbor first  neighbors-list
+    set neighbors-list remove first-neighbor neighbors-list
+
+    ask first-neighbor
+    [
+      if not visited
+      [
+        set visited true
+        set sub-neighbors-list dbscan_get_neighbors_list  DBSCAN_EPSILON first-neighbor
+        if length sub-neighbors-list >= min-points
+        [
+          ;; extends neighbors-list
+          set neighbors-list sentence neighbors-list sub-neighbors-list
+        ]
+       ]
+
+     ;;if cluster_id = DBSCAN_UNCLASSIFIED
+     ;;[
+       set cluster_id new-cluster-id
+       set color (new-cluster-id * 10) + 5
+     ;;]
+    ]
+   ]
+end
+
+
+
 to set_cluster_id
   let cluster_state dbscan_expand
   ;type (word "This Ant [" who "] cluster state [" cluster_state "]\n")
@@ -245,7 +348,6 @@ to-report dbscan_expand
   set cluster_id DBSCAN_NOT_CORE_POINT
   let this who
   let seeds dbscan_get_epsilon_neighbours DBSCAN_EPSILON this
-
   ifelse length seeds < DBSCAN_MIN_POINTS [
     set cluster_id DBSCAN_NOISE
   ] [
@@ -263,9 +365,10 @@ to-report dbscan_expand
   report cluster_id
 end
 
+
 to dbscan_spread [seeds seed_agent_id]
   ;type (word "Calculating spread from [" seed_agent_id "] with seeds [" seeds "] \n")
-  let spread dbscan_get_epsilon_neighbours DBSCAN_EPSILON seed_agent_id
+  let spread dbscan_get_epsilon_neighbours DBSCAN_EPSILON who
   if length spread >= DBSCAN_MIN_POINTS [
     foreach spread [
       ask ant ?1 [
@@ -294,6 +397,17 @@ to-report dbscan_get_epsilon_neighbours [epsilon this]
     ]
   ]
   report list_agents
+end
+
+to-report dbscan_get_neighbors_list [ epsilon  p]
+  ;; returns and agent-set but converted to a list with sort
+  let neighbors-list sort ants in-radius epsilon
+
+  ;; returns the list without p
+  set neighbors-list remove p neighbors-list
+
+  ;;type (word "current " p " list " neighbors-list " \n")
+  report neighbors-list
 end
 
 to-report dbscan_euclidean_dist [a_ant_x a_ant_y b_ant_x b_ant_y]
@@ -355,7 +469,7 @@ population
 population
 1
 2000
-100
+145
 1
 1
 ants
@@ -387,7 +501,7 @@ smell-range
 smell-range
 1
 10
-3
+5
 1
 1
 patches
@@ -402,7 +516,7 @@ diffusion
 diffusion
 0
 1
-0.4
+0.9
 0.01
 1
 NIL
@@ -417,7 +531,7 @@ evaporation
 evaporation
 0
 1
-0.1
+0.13
 0.01
 1
 NIL
@@ -434,10 +548,10 @@ smell-method
 1
 
 PLOT
-121
-299
-321
-449
+114
+306
+314
+456
 Number of Clusters
 ticks
 DBSCAN_CLUSTER_ID
@@ -452,15 +566,97 @@ PENS
 "default" 1.0 0 -16777216 true "" "plot DBSCAN_CLUSTER_ID"
 
 MONITOR
-149
+113
 478
-314
+278
 523
 Current Number of Clusters
 DBSCAN_CLUSTER_ID
 17
 1
 11
+
+SWITCH
+114
+266
+239
+299
+CLUSTERIZE
+CLUSTERIZE
+0
+1
+-1000
+
+PLOT
+998
+47
+1504
+402
+Clusters and outliers
+ticks
+NIL
+0.0
+10.0
+0.0
+10.0
+true
+true
+"" ""
+PENS
+"outliers" 1.0 0 -2674135 true "" "plot DBSCAN_OUTLIERS"
+"clusters" 1.0 0 -13840069 true "" "plot DBSCAN_CLUSTER_ID"
+
+MONITOR
+1507
+47
+1564
+92
+outliers
+DBSCAN_OUTLIERS
+17
+1
+11
+
+MONITOR
+1508
+95
+1565
+140
+clusters
+DBSCAN_CLUSTER_ID
+17
+1
+11
+
+SLIDER
+999
+10
+1171
+43
+CLUSTER_EPSILON
+CLUSTER_EPSILON
+0
+20
+10
+1
+1
+NIL
+HORIZONTAL
+
+SLIDER
+1184
+10
+1356
+43
+MIN_CLUSTER_SIZE
+MIN_CLUSTER_SIZE
+1
+10
+10
+1
+1
+NIL
+HORIZONTAL
 
 @#$#@#$#@
 ## ESTADO DE LA PRACTICA
