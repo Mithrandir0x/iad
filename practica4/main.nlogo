@@ -1,4 +1,5 @@
 ;; GLOBAL STUFF
+extensions[csv]
 breed[ants ant]
 ants-own[cluster_id visited noise]
 patches-own[pheromones]
@@ -6,6 +7,8 @@ globals
 [
   VERBOSE
   STEP-ANGLE
+
+  LOADED-ANTS
 
   ;; DBSCAN RELATED GLOBAL VARIABLES
   ;;   CLUSTERIZED ITEMS STATES
@@ -27,37 +30,47 @@ globals
 
 ;; SETUP PROCEDURE
 to setup
- clear-all
- reset-ticks
- ;; globals
- set VERBOSE false
- set STEP-ANGLE 10
- ;; dbscan stuff
- set DBSCAN_UNCLASSIFIED -1
- set DBSCAN_NOISE -2
- set DBSCAN_CORE_POINT 1
- set DBSCAN_NOT_CORE_POINT 0
- set DBSCAN_SUCCESS 0
- set DBSCAN_EPSILON 20
- set DBSCAN_MIN_POINTS 1
- set DBSCAN_CLUSTER_ID 0
- set DBSCAN_OUTLIERS 0
- set DBSCAN_AGENT_CENTROID_COLOR [ 255 0 255 255 ]
- set DBSCAN_NOISE_COLOR 0
- ;; ants config
- create-ants population [
-   set color 5
-   ;;setxy random-xcor random-ycor ;; initial random position
-   move-to one-of patches
-   set shape "circle" ;; helps visualization
- ]
-
- ;; patches config
- ask patches [
-   set pcolor [ 255 255 255 ]
-   set pheromones 0
-   ]
-
+  reset-ticks
+  ;; globals
+  set VERBOSE false
+  set STEP-ANGLE 10
+  ;; dbscan stuff
+  set DBSCAN_UNCLASSIFIED -1
+  set DBSCAN_NOISE -2
+  set DBSCAN_CORE_POINT 1
+  set DBSCAN_NOT_CORE_POINT 0
+  set DBSCAN_SUCCESS 0
+  set DBSCAN_EPSILON 20
+  set DBSCAN_MIN_POINTS 1
+  set DBSCAN_CLUSTER_ID 0
+  set DBSCAN_OUTLIERS 0
+  set DBSCAN_AGENT_CENTROID_COLOR [ 255 0 255 255 ]
+  set DBSCAN_NOISE_COLOR 0
+  ifelse is-list? LOADED-ANTS and length LOADED-ANTS > 0 [
+    foreach LOADED-ANTS [
+      create-ants 1 [
+        set color 5
+        ;;setxy random-xcor random-ycor ;; initial random position
+        move-to one-of patches
+        set shape "circle" ;; helps visualization
+        set xcor item 0 ?1
+        set ycor item 1 ?1
+      ]
+    ]
+  ] [
+    ;; ants config
+    create-ants population [
+      set color 5
+      ;;setxy random-xcor random-ycor ;; initial random position
+      move-to one-of patches
+      set shape "circle" ;; helps visualization
+    ]
+  ]
+  ;; patches config
+  ask patches [
+    set pcolor [ 255 255 255 ]
+    set pheromones 0
+  ]
 end
 
 to run_test ;; run forever function
@@ -88,6 +101,42 @@ to run_test ;; run forever function
   tick
 end
 
+to save-scenario-file
+  ifelse length scenario-csv-file > 0 [
+    let data []
+    ask ants [
+      let ant_pos []
+      set ant_pos lput xcor ant_pos
+      set ant_pos lput ycor ant_pos
+      set data lput ant_pos data
+    ]
+    csv:to-file scenario-csv-file data
+    show (word "Saved scenario [" scenario-csv-file "] with [" length data "] ants")
+  ] [
+    show "variable [scenario-csv-file] cannot be empty."
+  ]
+end
+
+to load-scenario-file
+  ifelse length scenario-csv-file > 0 [
+    file-open scenario-csv-file
+    let result csv:from-row file-read-line
+    while [ not file-at-end? ] [
+      let row csv:from-row file-read-line
+      set LOADED-ANTS lput row LOADED-ANTS
+    ]
+    file-close
+    show (word "Loaded scenario from [" scenario-csv-file "] with [" length LOADED-ANTS "] ants")
+    set population length LOADED-ANTS
+    setup
+  ] [
+    show "variable [scenario-csv-file] cannot be empty."
+  ]
+end
+
+to clear-scenario-file
+  set scenario-csv-file ""
+end
 
 to think
   let new-patch patch-ahead 1 ;; default value needed
@@ -443,7 +492,7 @@ BUTTON
 99
 67
 Setup
-setup
+clear-all\nset LOADED-ANTS []\nsetup
 NIL
 1
 T
@@ -463,7 +512,7 @@ population
 population
 1
 2000
-514
+512
 1
 1
 ants
@@ -495,7 +544,7 @@ smell-range
 smell-range
 1
 10
-4
+6
 1
 1
 patches
@@ -510,7 +559,7 @@ diffusion
 diffusion
 0
 1
-0.5
+0.52
 0.01
 1
 NIL
@@ -661,7 +710,7 @@ smell-angle
 smell-angle
 15
 105
-46
+53
 1
 1
 degrees
@@ -691,6 +740,68 @@ update-clusters-each
 1
 ticks
 HORIZONTAL
+
+INPUTBOX
+115
+628
+505
+688
+scenario-csv-file
+NIL
+1
+0
+String
+
+BUTTON
+17
+621
+106
+654
+Save To
+save-scenario-file
+NIL
+1
+T
+OBSERVER
+NIL
+NIL
+NIL
+NIL
+1
+
+BUTTON
+17
+661
+106
+694
+Load From
+ifelse length scenario-csv-file > 0 [\n  clear-all\n  set LOADED-ANTS []\n  load-scenario-file\n] [\n  show \"variable [scenario-csv-file] cannot be empty.\"\n]
+NIL
+1
+T
+OBSERVER
+NIL
+NIL
+NIL
+NIL
+1
+
+BUTTON
+514
+641
+577
+674
+Clear
+clear-scenario-file
+NIL
+1
+T
+OBSERVER
+NIL
+NIL
+NIL
+NIL
+1
 
 @#$#@#$#@
 ## ESTADO DE LA PRACTICA
@@ -1047,6 +1158,46 @@ NetLogo 5.3.1
 @#$#@#$#@
 @#$#@#$#@
 @#$#@#$#@
+<experiments>
+  <experiment name="Hello World Experiment" repetitions="1" runMetricsEveryStep="true">
+    <setup>setup</setup>
+    <go>run_test</go>
+    <metric>count turtles</metric>
+    <enumeratedValueSet variable="CLUSTER_EPSILON">
+      <value value="5"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="smell-range">
+      <value value="5"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="evaporation">
+      <value value="0.6"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="scenario-csv-file">
+      <value value="&quot;&quot;"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="smell-angle">
+      <value value="53"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="update-clusters-each">
+      <value value="5"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="diffusion">
+      <value value="0.52"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="smell-method">
+      <value value="&quot;basic&quot;"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="CLUSTERIZE">
+      <value value="true"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="population">
+      <value value="512"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="MIN_CLUSTER_SIZE">
+      <value value="5"/>
+    </enumeratedValueSet>
+  </experiment>
+</experiments>
 @#$#@#$#@
 @#$#@#$#@
 default
