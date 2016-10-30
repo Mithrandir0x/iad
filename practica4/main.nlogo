@@ -8,8 +8,6 @@ globals
   VERBOSE
   STEP-ANGLE
 
-  LOADED-ANTS
-
   ;; DBSCAN RELATED GLOBAL VARIABLES
   ;;   CLUSTERIZED ITEMS STATES
   DBSCAN_UNCLASSIFIED
@@ -28,8 +26,31 @@ globals
 ]
 
 
-;; SETUP PROCEDURE
+;; SETUP PROCEDURES
 to setup
+  clear-all
+  initialize-world []
+end
+
+to load-world-file
+  ifelse length world-csv-file > 0 [
+    let ants-to-load []
+    file-open world-csv-file
+    let result csv:from-row file-read-line
+    while [ not file-at-end? ] [
+      let row csv:from-row file-read-line
+      set ants-to-load lput row ants-to-load
+    ]
+    file-close
+    show (word "Loaded world from [" world-csv-file "] with [" length ants-to-load "] ants")
+    set population length ants-to-load
+    initialize-world ants-to-load
+  ] [
+    show "variable [world-csv-file] cannot be empty."
+  ]
+end
+
+to initialize-world [ants-to-load]
   reset-ticks
   ;; globals
   set VERBOSE false
@@ -46,8 +67,8 @@ to setup
   set DBSCAN_OUTLIERS 0
   set DBSCAN_AGENT_CENTROID_COLOR [ 255 0 255 255 ]
   set DBSCAN_NOISE_COLOR 0
-  ifelse is-list? LOADED-ANTS and length LOADED-ANTS > 0 [
-    foreach LOADED-ANTS [
+  ifelse is-list? ants-to-load and length ants-to-load > 0 [
+    foreach ants-to-load [
       create-ants 1 [
         set color 5
         ;;setxy random-xcor random-ycor ;; initial random position
@@ -93,7 +114,6 @@ to run_test ;; run forever function
 
   if CLUSTERIZE and ticks mod update-clusters-each = 0
   [
-    ;;run_dbscan_a
     dbscan_run
   ]
 
@@ -101,8 +121,8 @@ to run_test ;; run forever function
   tick
 end
 
-to save-scenario-file
-  ifelse length scenario-csv-file > 0 [
+to save-world-file
+  ifelse length world-csv-file > 0 [
     let data []
     ask ants [
       let ant_pos []
@@ -110,32 +130,15 @@ to save-scenario-file
       set ant_pos lput ycor ant_pos
       set data lput ant_pos data
     ]
-    csv:to-file scenario-csv-file data
-    show (word "Saved scenario [" scenario-csv-file "] with [" length data "] ants")
+    csv:to-file world-csv-file data
+    show (word "Saved world [" world-csv-file "] with [" length data "] ants")
   ] [
-    show "variable [scenario-csv-file] cannot be empty."
+    show "variable [world-csv-file] cannot be empty."
   ]
 end
 
-to load-scenario-file
-  ifelse length scenario-csv-file > 0 [
-    file-open scenario-csv-file
-    let result csv:from-row file-read-line
-    while [ not file-at-end? ] [
-      let row csv:from-row file-read-line
-      set LOADED-ANTS lput row LOADED-ANTS
-    ]
-    file-close
-    show (word "Loaded scenario from [" scenario-csv-file "] with [" length LOADED-ANTS "] ants")
-    set population length LOADED-ANTS
-    setup
-  ] [
-    show "variable [scenario-csv-file] cannot be empty."
-  ]
-end
-
-to clear-scenario-file
-  set scenario-csv-file ""
+to clear-world-file
+  set world-csv-file ""
 end
 
 to think
@@ -290,13 +293,6 @@ end
 
 ;;--------------- DBSCAN IMPLEMENTATION
 
-
-to run_dbscan_a
-  set DBSCAN_CLUSTER_ID 0
-  ask ants[ set_cluster_id ]
-end
-
-
 to dbscan_run
   ;; from sliders
   set DBSCAN_MIN_POINTS MIN_CLUSTER_SIZE
@@ -376,72 +372,6 @@ to dbscan_expand_cluster [ neighbors-list epsilon min-points new-cluster-id ]
    ]
 end
 
-
-
-to set_cluster_id
-  let cluster_state dbscan_expand
-  ;type (word "This Ant [" who "] cluster state [" cluster_state "]\n")
-  if cluster_state = DBSCAN_CORE_POINT [
-    set DBSCAN_CLUSTER_ID ( DBSCAN_CLUSTER_ID + 1 )
-    set color DBSCAN_AGENT_CENTROID_COLOR
-  ]
-end
-
-to-report dbscan_expand
-  set cluster_id DBSCAN_NOT_CORE_POINT
-  let this who
-  let seeds dbscan_get_epsilon_neighbours DBSCAN_EPSILON this
-  ifelse length seeds < DBSCAN_MIN_POINTS [
-    set cluster_id DBSCAN_NOISE
-  ] [
-    foreach seeds [
-      ask ant ?1 [
-        set cluster_id DBSCAN_CLUSTER_ID
-      ]
-    ]
-    foreach seeds [
-      dbscan_spread seeds ?1
-    ]
-    set cluster_id DBSCAN_CORE_POINT
-  ]
-
-  report cluster_id
-end
-
-
-to dbscan_spread [seeds seed_agent_id]
-  ;type (word "Calculating spread from [" seed_agent_id "] with seeds [" seeds "] \n")
-  let spread dbscan_get_epsilon_neighbours DBSCAN_EPSILON who
-  if length spread >= DBSCAN_MIN_POINTS [
-    foreach spread [
-      ask ant ?1 [
-        if cluster_id = DBSCAN_NOISE or cluster_id = DBSCAN_UNCLASSIFIED [
-          set cluster_id DBSCAN_CLUSTER_ID
-        ]
-      ]
-    ]
-  ]
-end
-
-to-report dbscan_get_epsilon_neighbours [epsilon this]
-  let curr_x xcor
-  let curr_y ycor
-  let list_agents []
-  ask ants [
-    let ant_x xcor
-    let ant_y xcor
-    let i_ant who
-    let dist dbscan_euclidean_dist curr_x curr_y ant_x ant_y
-    if this != i_ant and dist < epsilon [
-      ;type (word "This Ant [" this "] at [" curr_x "," curr_y "] ")
-      ;type (word "Iter Ant [" i_ant "] at [" ant_x "," ant_y "] ")
-      ;type (word "Euclidean distance [" dist "]\n")
-      set list_agents lput i_ant list_agents
-    ]
-  ]
-  report list_agents
-end
-
 to-report dbscan_get_neighbors_list [ epsilon  p]
   ;; returns and agent-set but converted to a list with sort
   let neighbors-list sort ants in-radius epsilon
@@ -451,10 +381,6 @@ to-report dbscan_get_neighbors_list [ epsilon  p]
 
   ;;type (word "current " p " list " neighbors-list " \n")
   report neighbors-list
-end
-
-to-report dbscan_euclidean_dist [a_ant_x a_ant_y b_ant_x b_ant_y]
-  report sqrt ( ( ( a_ant_x - b_ant_x ) ^ 2 ) + ( ( a_ant_y - b_ant_y ) ^ 2 ) )
 end
 
 ;;;
@@ -492,7 +418,7 @@ BUTTON
 99
 67
 Setup
-clear-all\nset LOADED-ANTS []\nsetup
+setup
 NIL
 1
 T
@@ -544,7 +470,7 @@ smell-range
 smell-range
 1
 10
-6
+10
 1
 1
 patches
@@ -574,7 +500,7 @@ evaporation
 evaporation
 0
 1
-0.62
+0.6
 0.01
 1
 NIL
@@ -588,36 +514,7 @@ CHOOSER
 smell-method
 smell-method
 "basic" "scan"
-0
-
-PLOT
-116
-378
-316
-528
-Number of Clusters
-ticks
-DBSCAN_CLUSTER_ID
-0.0
-10.0
-0.0
-10.0
-true
-false
-"" ""
-PENS
-"default" 1.0 0 -16777216 true "" "plot DBSCAN_CLUSTER_ID"
-
-MONITOR
-115
-550
-280
-595
-Current Number of Clusters
-DBSCAN_CLUSTER_ID
-17
 1
-11
 
 SWITCH
 114
@@ -746,7 +643,7 @@ INPUTBOX
 628
 505
 688
-scenario-csv-file
+world-csv-file
 NIL
 1
 0
@@ -758,7 +655,7 @@ BUTTON
 106
 654
 Save To
-save-scenario-file
+save-world-file
 NIL
 1
 T
@@ -775,7 +672,7 @@ BUTTON
 106
 694
 Load From
-ifelse length scenario-csv-file > 0 [\n  clear-all\n  set LOADED-ANTS []\n  load-scenario-file\n] [\n  show \"variable [scenario-csv-file] cannot be empty.\"\n]
+ifelse length world-csv-file > 0 [\n  load-world-file\n] [\n  show \"variable [world-csv-file] cannot be empty.\"\n]
 NIL
 1
 T
@@ -792,7 +689,7 @@ BUTTON
 577
 674
 Clear
-clear-scenario-file
+clear-world-file
 NIL
 1
 T
@@ -1162,7 +1059,8 @@ NetLogo 5.3.1
   <experiment name="Hello World Experiment" repetitions="1" runMetricsEveryStep="true">
     <setup>setup</setup>
     <go>run_test</go>
-    <metric>count turtles</metric>
+    <timeLimit steps="30"/>
+    <metric>DBSCAN_CLUSTER_ID</metric>
     <enumeratedValueSet variable="CLUSTER_EPSILON">
       <value value="5"/>
     </enumeratedValueSet>
@@ -1172,7 +1070,7 @@ NetLogo 5.3.1
     <enumeratedValueSet variable="evaporation">
       <value value="0.6"/>
     </enumeratedValueSet>
-    <enumeratedValueSet variable="scenario-csv-file">
+    <enumeratedValueSet variable="world-csv-file">
       <value value="&quot;&quot;"/>
     </enumeratedValueSet>
     <enumeratedValueSet variable="smell-angle">
