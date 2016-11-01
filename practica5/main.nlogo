@@ -85,6 +85,7 @@ to run_test
   detect_cars
 
   move_cars
+  tick
 end
 
 ;; ---------------------------------------- HELPERS
@@ -134,17 +135,21 @@ to process_message [ sender kind message ]
     if message = "ASK" [
       ifelse energy >= T-DESCANSO / 2 [
         send_message sender "PASS-THROUGH" "YES"
-        set heading heading - 180
+        face sender
+        fd 1
       ] [
         send_message sender "PASS-THROUGH" "NO"
       ]
     ]
     if message = "YES" [
-      show (word "car [" myself "] cnt-passthroughs [" cnt-passthroughs "]")
+      show (word "car [" who "] cnt-passthroughs [" cnt-passthroughs "]")
       set cnt-passthroughs cnt-passthroughs + 1
+      fd 1
     ]
     if message = "NO" [
-      set heading heading - 180
+      show (word sender "said NO")
+      set heading heading + 90
+      fd 1
     ]
   ]
 end
@@ -181,29 +186,76 @@ to move
   ]
 end
 
+to detect_ ;; detect surrounding cars between 2 and 1 and waiting
+  let cars-around sort (cars in-radius 2) with [waiting > 0]
+  let cars-close sort (cars in-radius 1) with [waiting > 0]
+
+  show (word "Cars around waiting " cars-around)
+  show (word "Cars close waiting " cars-close)
+
+  ;; removes close-cars from cars-around
+  foreach cars-close
+  [
+    if (member? ? cars-around)
+    [
+      set cars-around remove ? cars-around
+     ]
+  ]
+
+  show (word "Cars around waiting " cars-around)
+  if not empty? cars-around
+  [
+    ;; now we pick one of the cars around and try to get its position
+    let neighbor one-of cars-around
+    face neighbor
+    ifelse (random (99) + 1) > probOcuparPos
+    [
+      send_message neighbor "PASS-THROUGH" "ASK"
+    ]
+    [
+      set heading heading + 90
+      fd 1
+    ]
+  ]
+end
+
 
 
 
 to detect
   let cars-in-front stopped_cars 2
   show cars-in-front
-  foreach cars-in-front [
-    send_message car ?1 "PASS-THROUGH" "ASK"
+
+  if not empty? cars-in-front
+  [
+    ;; now we pick one of the cars around and try to get its position
+    let neighbor one-of cars-in-front
+    ifelse (random (99) + 1) > probOcuparPos
+    [
+      send_message neighbor "PASS-THROUGH" "ASK"
+    ]
+    [
+      set heading heading + 90
+      fd 1
+    ]
   ]
+
+  ;;foreach cars-in-front [
+  ;;  send_message car ?1 "PASS-THROUGH" "ASK"
+  ;;]
 end
 
 to-report stopped_cars[ ahead ]
   let counter 1
   let list-cars []
   let temp-patch patch-ahead 1
-  let current-angle 0
 
   while [counter <= ahead]
   [
     ask cars-on patch-ahead counter[
       if (waiting > 0) and (not member? who list-cars)
       [
-        set list-cars lput who list-cars
+        set list-cars lput self list-cars
       ]
     ]
     set counter counter + 1
@@ -291,7 +343,7 @@ NUM-CARS
 NUM-CARS
 1
 100
-2
+27
 1
 1
 cars
@@ -338,7 +390,7 @@ T-DESCANSO
 T-DESCANSO
 10
 100
-50
+20
 1
 1
 ticks
@@ -350,7 +402,7 @@ INPUTBOX
 505
 688
 world-csv-file
-worlds\\test_00.csv
+worlds/test_00.csv
 1
 0
 String
