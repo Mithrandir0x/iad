@@ -34,12 +34,16 @@ end
 
 to load-world-file
   ifelse length world-csv-file > 0 [
+    clear-all
     let ants-to-load []
     file-open world-csv-file
-    let result csv:from-row file-read-line
     while [ not file-at-end? ] [
       let row csv:from-row file-read-line
-      set ants-to-load lput row ants-to-load
+      if length row = 2 [
+        if is-number? item 0 row [
+          set ants-to-load lput row ants-to-load
+        ]
+      ]
     ]
     file-close
     show (word "Loaded world from [" world-csv-file "] with [" length ants-to-load "] ants")
@@ -124,6 +128,7 @@ end
 to save-world-file
   ifelse length world-csv-file > 0 [
     let data []
+    set data lput (list ";xcor" "ycor") data
     ask ants [
       let ant_pos []
       set ant_pos lput xcor ant_pos
@@ -131,7 +136,7 @@ to save-world-file
       set data lput ant_pos data
     ]
     csv:to-file world-csv-file data
-    show (word "Saved world [" world-csv-file "] with [" length data "] ants")
+    show (word "Saved world [" world-csv-file "] with [" length but-first data "] ants")
   ] [
     show "variable [world-csv-file] cannot be empty."
   ]
@@ -438,7 +443,7 @@ population
 population
 1
 2000
-512
+514
 1
 1
 ants
@@ -644,7 +649,7 @@ INPUTBOX
 505
 688
 world-csv-file
-NIL
+D:\\Repositarios\\iad\\practica4\\worlds\\world_00.csv
 1
 0
 String

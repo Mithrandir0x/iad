@@ -1,3 +1,5 @@
+extensions[csv]
+
 breed[cars car]
 
 cars-own[
@@ -11,18 +13,62 @@ cars-own[
 ;; SETUP
 to setup
   clear-all
+  initialize_world []
+end
+
+to load_world_file
+  ifelse length world-csv-file > 0 [
+    clear-all
+    let cars-to-load []
+    file-open world-csv-file
+    while [ not file-at-end? ] [
+      let row csv:from-row file-read-line
+      if length row = 3 [
+        if is-number? item 0 row [
+          set cars-to-load lput row cars-to-load
+        ]
+      ]
+    ]
+    file-close
+    show (word "Loaded world from [" world-csv-file "] with [" length cars-to-load "] cars")
+    set NUM-CARS length cars-to-load
+    initialize_world cars-to-load
+  ] [
+    show "variable [world-csv-file] cannot be empty."
+  ]
+end
+
+to initialize_world [cars-to-load]
   reset-ticks
 
-  create-cars NUM-CARS [
-    set probOcuparPos random (99) + 1 ;; random number between 1 a 100
-    ;; color gradient
-    set color calc_gradient probOcuparPos
-    set waiting 0
-    ;;set energy BASE-ENERGY
-    set energy random BASE-ENERGY
-    set next-messages [] ;; Inicializamos las listas de mensajes recibidos
-    set shape "airplane"
-    setxy random-xcor random-ycor
+  ifelse is-list? cars-to-load and length cars-to-load > 0 [
+    foreach cars-to-load [
+      create-cars 1 [
+        set probOcuparPos random (99) + 1 ;; random number between 1 a 100
+        ;; color gradient
+        set color calc_gradient probOcuparPos
+        set waiting 0
+        ;;set energy BASE-ENERGY
+        set energy random BASE-ENERGY
+        set next-messages [] ;; Inicializamos las listas de mensajes recibidos
+        set shape "airplane"
+        set xcor item 0 ?1
+        set ycor item 1 ?1
+        set heading item 2 ?1
+      ]
+    ]
+  ] [
+    create-cars NUM-CARS [
+      set probOcuparPos random (99) + 1 ;; random number between 1 a 100
+      ;; color gradient
+      set color calc_gradient probOcuparPos
+      set waiting 0
+      ;;set energy BASE-ENERGY
+      set energy random BASE-ENERGY
+      set next-messages [] ;; Inicializamos las listas de mensajes recibidos
+      set shape "airplane"
+      setxy random-xcor random-ycor
+    ]
   ]
 end
 
@@ -139,6 +185,29 @@ to-report stopped_cars[ ahead ]
   report list-cars
 end
 
+;; LOAD/SAVE BUTTONS
+
+to save-world-file
+  ifelse length world-csv-file > 0 [
+    let data []
+    set data lput (list ";xcor" "ycor" "heading") data
+    ask cars [
+      let ant_pos []
+      set ant_pos lput xcor ant_pos
+      set ant_pos lput ycor ant_pos
+      set ant_pos lput heading ant_pos
+      set data lput ant_pos data
+    ]
+    csv:to-file world-csv-file data
+    show (word "Saved world [" world-csv-file "] with [" length but-first data "] cars")
+  ] [
+    show "variable [world-csv-file] cannot be empty."
+  ]
+end
+
+to clear-world-file
+  set world-csv-file ""
+end
 @#$#@#$#@
 GRAPHICS-WINDOW
 451
@@ -193,7 +262,7 @@ NUM-CARS
 NUM-CARS
 1
 100
-47
+2
 1
 1
 cars
@@ -245,6 +314,85 @@ T-DESCANSO
 1
 ticks
 HORIZONTAL
+
+INPUTBOX
+115
+628
+505
+688
+world-csv-file
+D:\\Repositarios\\iad\\practica5\\worlds\\test_00.csv
+1
+0
+String
+
+BUTTON
+17
+621
+106
+654
+Save To
+save-world-file
+NIL
+1
+T
+OBSERVER
+NIL
+NIL
+NIL
+NIL
+1
+
+BUTTON
+17
+661
+106
+694
+Load From
+ifelse length world-csv-file > 0 [\n  load_world_file\n] [\n  show \"variable [world-csv-file] cannot be empty.\"\n]
+NIL
+1
+T
+OBSERVER
+NIL
+NIL
+NIL
+NIL
+1
+
+BUTTON
+514
+641
+577
+674
+Clear
+clear-world-file
+NIL
+1
+T
+OBSERVER
+NIL
+NIL
+NIL
+NIL
+1
+
+BUTTON
+32
+116
+118
+149
+Run Once
+run_test
+NIL
+1
+T
+OBSERVER
+NIL
+D
+NIL
+NIL
+1
 
 @#$#@#$#@
 ## WHAT IS IT?
