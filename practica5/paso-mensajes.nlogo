@@ -14,6 +14,7 @@ to setup
 end
 
 to go
+  show (word "tick [" ticks "]")
   swap-messages            ;; Activamos los mensajes mandados en la iteración anterior
   process-messages         ;; Procesamos los mensajes
   ;; move? do something?   ;; Actuamos
@@ -132,6 +133,23 @@ BUTTON
 Run
 go
 T
+1
+T
+OBSERVER
+NIL
+NIL
+NIL
+NIL
+1
+
+BUTTON
+35
+147
+121
+180
+Run Once
+go
+NIL
 1
 T
 OBSERVER

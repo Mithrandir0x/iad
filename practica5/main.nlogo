@@ -31,11 +31,11 @@ to load_world_file
       ]
     ]
     file-close
-    show (word "Loaded world from [" world-csv-file "] with [" length cars-to-load "] cars")
+    ;show (word "Loaded world from [" world-csv-file "] with [" length cars-to-load "] cars")
     set NUM-CARS length cars-to-load
     initialize_world cars-to-load
   ] [
-    show "variable [world-csv-file] cannot be empty."
+    ;show "variable [world-csv-file] cannot be empty."
   ]
 end
 
@@ -77,7 +77,7 @@ end
 
 ;; RUN
 to run_test
-  show (word "ticks [" ticks "]")
+  ;show (word "ticks [" ticks "]")
 
   swap_messages
   process_messages
@@ -92,7 +92,7 @@ end
 to send_message [recipient kind message]
   ;; Añadimos el mensaje a la cola de mensajes del agente receptor
   ;; (se añade a next-messages para que el receptor no lo vea hasta la siguiente iteración)
-  show (word "send_message to [" recipient "] kind [" kind "] message [" message "]")
+  ;show (word "send_message to [" recipient "] kind [" kind "] message [" message "]")
   ask recipient [
     set next-messages lput (list myself kind message) next-messages
   ]
@@ -129,7 +129,7 @@ end
 
 
 to process_message [ sender kind message ]
-  show (word "process_message sender [" sender "] kind [" kind "] message [" message "]")
+  ;show (word "process_message sender [" sender "] kind [" kind "] message [" message "]")
   if kind = "PASS-THROUGH" [
     if message = "ASK" [
       ifelse energy >= T-DESCANSO / 2 [
@@ -140,7 +140,7 @@ to process_message [ sender kind message ]
       ]
     ]
     if message = "YES" [
-      show (word "car [" myself "] cnt-passthroughs [" cnt-passthroughs "]")
+      ;show (word "cnt-passthroughs [" cnt-passthroughs "]")
       set cnt-passthroughs cnt-passthroughs + 1
     ]
     if message = "NO" [
@@ -160,24 +160,26 @@ to move
   ;; en caso de estar en waiting, decrementamos el tiempo de waiting y
   ;; aumentamos el de energia
 
-  ifelse waiting = 0
-  [
-    if energy > 0
+  if length next-messages = 0 [
+    ifelse waiting = 0
     [
-      forward 1
-      set energy energy - 1
-      show (word "move forward energy [" energy "]")
-    ]
+      if energy > 0
+      [
+        forward 1
+        set energy energy - 1
+        ;show (word "move forward energy [" energy "]")
+      ]
 
-    if energy = 0 [
-      set waiting T-DESCANSO
-      show (word "move stop waiting [" waiting "]")
+      if energy = 0 [
+        set waiting T-DESCANSO
+        ;show (word "move stop waiting [" waiting "]")
+      ]
     ]
-  ]
-  [
-    set energy energy + 1
-    set waiting waiting - 1
-    show (word "move wait energy [" energy "] waiting [" waiting "]")
+    [
+      set energy energy + 1
+      set waiting waiting - 1
+      ;show (word "move wait energy [" energy "] waiting [" waiting "]")
+    ]
   ]
 end
 
@@ -185,10 +187,12 @@ end
 
 
 to detect
-  let cars-in-front stopped_cars 2
-  show cars-in-front
-  foreach cars-in-front [
-    send_message car ?1 "PASS-THROUGH" "ASK"
+  if length next-messages = 0 [
+    let cars-in-front stopped_cars 2
+    ;show cars-in-front
+    foreach cars-in-front [
+      send_message car ?1 "PASS-THROUGH" "ASK"
+    ]
   ]
 end
 
@@ -228,9 +232,9 @@ to save-world-file
       set data lput ant_pos data
     ]
     csv:to-file world-csv-file data
-    show (word "Saved world [" world-csv-file "] with [" length but-first data "] cars")
+    ;show (word "Saved world [" world-csv-file "] with [" length but-first data "] cars")
   ] [
-    show "variable [world-csv-file] cannot be empty."
+    ;show "variable [world-csv-file] cannot be empty."
   ]
 end
 
@@ -291,7 +295,7 @@ NUM-CARS
 NUM-CARS
 1
 100
-2
+35
 1
 1
 cars
