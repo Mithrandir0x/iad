@@ -8,6 +8,7 @@ cars-own[
   waiting
   current-messages
   next-messages
+  cnt-passthroughs
 ]
 
 ;; SETUP
@@ -23,7 +24,7 @@ to load_world_file
     file-open world-csv-file
     while [ not file-at-end? ] [
       let row csv:from-row file-read-line
-      if length row = 3 [
+      if length row = 6 [
         if is-number? item 0 row [
           set cars-to-load lput row cars-to-load
         ]
@@ -44,13 +45,13 @@ to initialize_world [cars-to-load]
   ifelse is-list? cars-to-load and length cars-to-load > 0 [
     foreach cars-to-load [
       create-cars 1 [
-        set probOcuparPos random (99) + 1 ;; random number between 1 a 100
+        set probOcuparPos item 4 ?1 ;; random number between 1 a 100
         ;; color gradient
         set color calc_gradient probOcuparPos
-        set waiting 0
-        ;;set energy BASE-ENERGY
-        set energy random BASE-ENERGY
+        set waiting item 3 ?1
+        set energy item 5 ?1
         set next-messages [] ;; Inicializamos las listas de mensajes recibidos
+        set cnt-passthroughs 0
         set shape "airplane"
         set xcor item 0 ?1
         set ycor item 1 ?1
@@ -66,6 +67,7 @@ to initialize_world [cars-to-load]
       ;;set energy BASE-ENERGY
       set energy random BASE-ENERGY
       set next-messages [] ;; Inicializamos las listas de mensajes recibidos
+      set cnt-passthroughs 0
       set shape "airplane"
       setxy random-xcor random-ycor
     ]
@@ -75,6 +77,8 @@ end
 
 ;; RUN
 to run_test
+  show (word "ticks [" ticks "]")
+
   swap_messages
   process_messages
 
@@ -88,6 +92,7 @@ end
 to send_message [recipient kind message]
   ;; Añadimos el mensaje a la cola de mensajes del agente receptor
   ;; (se añade a next-messages para que el receptor no lo vea hasta la siguiente iteración)
+  show (word "send_message to [" recipient "] kind [" kind "] message [" message "]")
   ask recipient [
     set next-messages lput (list myself kind message) next-messages
   ]
@@ -123,10 +128,26 @@ to-report calc_gradient[ base-color ];; color gradient between red and green
 end
 
 
-to process_message [ sender kind message]
-
+to process_message [ sender kind message ]
+  show (word "process_message sender [" sender "] kind [" kind "] message [" message "]")
+  if kind = "PASS-THROUGH" [
+    if message = "ASK" [
+      ifelse energy >= T-DESCANSO / 2 [
+        send_message sender "PASS-THROUGH" "YES"
+        set heading heading - 180
+      ] [
+        send_message sender "PASS-THROUGH" "NO"
+      ]
+    ]
+    if message = "YES" [
+      show (word "car [" myself "] cnt-passthroughs [" cnt-passthroughs "]")
+      set cnt-passthroughs cnt-passthroughs + 1
+    ]
+    if message = "NO" [
+      set heading heading - 180
+    ]
+  ]
 end
-
 
 
 to move
@@ -145,14 +166,18 @@ to move
     [
       forward 1
       set energy energy - 1
-     ]
+      show (word "move forward energy [" energy "]")
+    ]
 
-    if energy = 0 [set waiting T-DESCANSO]
-
+    if energy = 0 [
+      set waiting T-DESCANSO
+      show (word "move stop waiting [" waiting "]")
+    ]
   ]
   [
     set energy energy + 1
     set waiting waiting - 1
+    show (word "move wait energy [" energy "] waiting [" waiting "]")
   ]
 end
 
@@ -160,9 +185,11 @@ end
 
 
 to detect
-  let cars-in-front stopped_cars 10
+  let cars-in-front stopped_cars 2
   show cars-in-front
-
+  foreach cars-in-front [
+    send_message car ?1 "PASS-THROUGH" "ASK"
+  ]
 end
 
 to-report stopped_cars[ ahead ]
@@ -170,7 +197,6 @@ to-report stopped_cars[ ahead ]
   let list-cars []
   let temp-patch patch-ahead 1
   let current-angle 0
-
 
   while [counter <= ahead]
   [
@@ -190,12 +216,15 @@ end
 to save-world-file
   ifelse length world-csv-file > 0 [
     let data []
-    set data lput (list ";xcor" "ycor" "heading") data
+    set data lput (list ";xcor" "ycor" "heading" "waiting" "probOcuparPos" "energy") data
     ask cars [
       let ant_pos []
       set ant_pos lput xcor ant_pos
       set ant_pos lput ycor ant_pos
       set ant_pos lput heading ant_pos
+      set ant_pos lput waiting ant_pos
+      set ant_pos lput probOcuparPos ant_pos
+      set ant_pos lput energy ant_pos
       set data lput ant_pos data
     ]
     csv:to-file world-csv-file data
@@ -211,9 +240,9 @@ end
 @#$#@#$#@
 GRAPHICS-WINDOW
 451
-10
+12
 890
-470
+472
 16
 16
 13.0
@@ -321,7 +350,7 @@ INPUTBOX
 505
 688
 world-csv-file
-D:\\Repositarios\\iad\\practica5\\worlds\\test_00.csv
+worlds\\test_00.csv
 1
 0
 String
@@ -383,7 +412,7 @@ BUTTON
 118
 149
 Run Once
-run_test
+run_test\ntick
 NIL
 1
 T
