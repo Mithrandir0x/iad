@@ -11,6 +11,7 @@ cars-own[
   cnt-passthroughs
 ]
 
+
 ;; SETUP
 to setup
   clear-all
@@ -40,7 +41,7 @@ to load_world_file
 end
 
 to initialize_world [cars-to-load]
-  reset-ticks
+
 
   ifelse is-list? cars-to-load and length cars-to-load > 0 [
     foreach cars-to-load [
@@ -72,6 +73,8 @@ to initialize_world [cars-to-load]
       setxy random-xcor random-ycor
     ]
   ]
+  reset-ticks
+  update_occupy_positions_probs
 end
 
 
@@ -85,6 +88,8 @@ to run_test
   detect_cars
 
   move_cars
+
+  update_occupy_positions_times
   tick
 end
 
@@ -199,7 +204,10 @@ to detect
     foreach cars-in-front [
       ;;show ?1
       ;;send_message car ?1 "PASS-THROUGH" "ASK" ;;OLD
-      send_message ?1 "PASS-THROUGH" "ASK"
+       if (random (99) + 1) < probOcuparPos
+       [
+         send_message ?1 "PASS-THROUGH" "ASK"
+       ]
     ]
   ]
 end
@@ -208,13 +216,46 @@ end
 to-report stopped_cars[ ahead ]
   ;; check others in cone angle 30 + 30
   let cone-angle 60
-  let list-cars sort (cars in-cone ahead cone-angle) with [ waiting > 0] with [ who != [who] of myself ]
+  let list-cars sort (cars in-cone ahead cone-angle) with [ waiting > 0 and  who != [who] of myself ]
   ;;show( word "cone" list-cars)
 
   report list-cars
 end
 
-to-report stopped_cars_old[ ahead ]
+to update_occupy_positions_probs
+  set-current-plot "occupy position prob"
+  let list-cars sort-on[ProbOcuparPos] cars
+  let list-times [cnt-passthroughs] of cars
+  ;;set-histogram-num-bars (length list-times)
+  set-plot-y-range 0 ( (max list-times) + 2)
+  ;;set-plot-y-range 0 (length list-times)
+
+
+  clear-plot
+  foreach list-cars[
+    plot [ProbOcuparPos] of ?
+    plot-pen-down
+    ]
+end
+
+to update_occupy_positions_times
+  set-current-plot "occupy position times"
+  let list-cars sort-on[ProbOcuparPos] cars
+  let list-times [cnt-passthroughs] of cars
+  ;;set-histogram-num-bars (length list-times)
+  set-plot-y-range 0 ( (max list-times) + 2)
+  ;;set-plot-y-range 0 (length list-times)
+
+
+  clear-plot
+  foreach list-cars[
+    plot [cnt-passthroughs] of ?
+    plot-pen-down
+    ]
+end
+
+
+to-report stopped_tos_old[ ahead ]
  let cone-angle 60
  show( word "cone" sort (cars in-cone ahead cone-angle) with [waiting > 0])
 
@@ -447,6 +488,105 @@ NIL
 D
 NIL
 NIL
+1
+
+PLOT
+954
+17
+1352
+339
+Occupy position average
+ticks
+num-times
+0.0
+10.0
+0.0
+5.0
+true
+true
+"" ""
+PENS
+"60 >= prob-ocupa >= 40" 1.0 0 -6459832 true "" "plot mean [cnt-passthroughs] of cars with [ ProbOcuparPos <= 60 and ProbOcuparPos >= 40 ]"
+"prob-ocupar > 60" 1.0 0 -13840069 true "" "plot mean [cnt-passthroughs] of cars with [ ProbOcuparPos > 60 ]"
+"prob-ocupar < 40" 1.0 0 -2674135 true "" "plot mean [cnt-passthroughs] of cars with [ ProbOcuparPos < 40 ]"
+
+MONITOR
+1358
+17
+1469
+62
+prob-coupar > 60
+count cars with [ProbOcuparPos > 60]
+17
+1
+11
+
+MONITOR
+1358
+118
+1469
+163
+prob-ocupar < 40
+count cars with [ProbOcuparPos < 40]
+17
+1
+11
+
+MONITOR
+1358
+67
+1494
+112
+60 >= prob-ocupar >=40
+count cars with [ProbOcuparPos <= 60 and ProbOcuparPos >= 40 ]
+17
+1
+11
+
+PLOT
+956
+355
+1343
+487
+occupy position prob
+NIL
+NIL
+0.0
+10.0
+0.0
+10.0
+true
+false
+"" ""
+PENS
+"default" 1.0 1 -7500403 true "" ""
+
+PLOT
+956
+490
+1344
+640
+occupy position times
+NIL
+NIL
+0.0
+10.0
+0.0
+10.0
+true
+false
+"" ""
+PENS
+"default" 1.0 1 -16777216 true "" ""
+
+TEXTBOX
+1368
+406
+1518
+504
+Contrastamos la probabilidad que tiene un agente de ocupar una posicion y el numero de posiciones ocupadas ( podriamos hacer un plot haciendo un calculo con ambas variables en lugar de dos :/ )
+11
+0.0
 1
 
 @#$#@#$#@
