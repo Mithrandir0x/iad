@@ -85,6 +85,7 @@ to run_test
   detect_cars
 
   move_cars
+  tick
 end
 
 ;; ---------------------------------------- HELPERS
@@ -133,8 +134,11 @@ to process_message [ sender kind message ]
   if kind = "PASS-THROUGH" [
     if message = "ASK" [
       ifelse energy >= T-DESCANSO / 2 [
+        ;; in this case, faces the sender and moves towards him in
+        ;; order to swap the place
         send_message sender "PASS-THROUGH" "YES"
-        set heading heading - 180
+        face sender
+        fd 1
       ] [
         send_message sender "PASS-THROUGH" "NO"
       ]
@@ -142,9 +146,11 @@ to process_message [ sender kind message ]
     if message = "YES" [
       ;show (word "cnt-passthroughs [" cnt-passthroughs "]")
       set cnt-passthroughs cnt-passthroughs + 1
+      fd 1 ;; to swap places
     ]
     if message = "NO" [
-      set heading heading - 180
+      ;; in this case tries to avoid the guy
+      set heading heading + 90
     ]
   ]
 end
@@ -188,15 +194,30 @@ end
 
 to detect
   if length next-messages = 0 [
-    let cars-in-front stopped_cars 2
+    let cars-in-front stopped_cars 3
     ;show cars-in-front
     foreach cars-in-front [
-      send_message car ?1 "PASS-THROUGH" "ASK"
+      ;;show ?1
+      ;;send_message car ?1 "PASS-THROUGH" "ASK" ;;OLD
+      send_message ?1 "PASS-THROUGH" "ASK"
     ]
   ]
 end
 
+
 to-report stopped_cars[ ahead ]
+  ;; check others in cone angle 30 + 30
+  let cone-angle 60
+  let list-cars sort (cars in-cone ahead cone-angle) with [ waiting > 0] with [ who != [who] of myself ]
+  ;;show( word "cone" list-cars)
+
+  report list-cars
+end
+
+to-report stopped_cars_old[ ahead ]
+ let cone-angle 60
+ show( word "cone" sort (cars in-cone ahead cone-angle) with [waiting > 0])
+
   let counter 1
   let list-cars []
   let temp-patch patch-ahead 1
@@ -212,6 +233,7 @@ to-report stopped_cars[ ahead ]
     ]
     set counter counter + 1
   ]
+  show( word "normal" list-cars)
   report list-cars
 end
 
@@ -349,10 +371,10 @@ ticks
 HORIZONTAL
 
 INPUTBOX
-115
-628
-505
-688
+116
+507
+506
+567
 world-csv-file
 worlds\\test_00.csv
 1
@@ -360,10 +382,10 @@ worlds\\test_00.csv
 String
 
 BUTTON
-17
-621
-106
-654
+18
+500
+107
+533
 Save To
 save-world-file
 NIL
@@ -377,10 +399,10 @@ NIL
 1
 
 BUTTON
-17
-661
-106
-694
+18
+540
+107
+573
 Load From
 ifelse length world-csv-file > 0 [\n  load_world_file\n] [\n  show \"variable [world-csv-file] cannot be empty.\"\n]
 NIL
@@ -394,10 +416,10 @@ NIL
 1
 
 BUTTON
-514
-641
-577
-674
+515
+520
+578
+553
 Clear
 clear-world-file
 NIL
