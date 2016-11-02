@@ -41,7 +41,7 @@ to load_world_file
 end
 
 to initialize_world [cars-to-load]
-
+  random-seed 7777
 
   ifelse is-list? cars-to-load and length cars-to-load > 0 [
     foreach cars-to-load [
@@ -249,7 +249,7 @@ to update_occupy_positions_times
 
   clear-plot
   foreach list-cars[
-    plot [cnt-passthroughs] of ?
+    plot [cnt-passthroughs]  of ?
     plot-pen-down
     ]
 end
@@ -358,7 +358,7 @@ NUM-CARS
 NUM-CARS
 1
 100
-35
+50
 1
 1
 cars
@@ -506,8 +506,8 @@ true
 true
 "" ""
 PENS
-"60 >= prob-ocupa >= 40" 1.0 0 -6459832 true "" "plot mean [cnt-passthroughs] of cars with [ ProbOcuparPos <= 60 and ProbOcuparPos >= 40 ]"
 "prob-ocupar > 60" 1.0 0 -13840069 true "" "plot mean [cnt-passthroughs] of cars with [ ProbOcuparPos > 60 ]"
+"60 >= prob-ocupa >= 40" 1.0 0 -6459832 true "" "plot mean [cnt-passthroughs] of cars with [ ProbOcuparPos <= 60 and ProbOcuparPos >= 40 ]"
 "prob-ocupar < 40" 1.0 0 -2674135 true "" "plot mean [cnt-passthroughs] of cars with [ ProbOcuparPos < 40 ]"
 
 MONITOR
