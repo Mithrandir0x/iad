@@ -80,6 +80,7 @@ end
 
 ;; RUN
 to run_test
+  if ticks = STOP-AT [stop]
   ;show (word "ticks [" ticks "]")
 
   swap_messages
@@ -129,7 +130,8 @@ to detect_cars
   ask cars [ detect ]
 end
 
-to-report calc_gradient[ base-color ];; color gradient between red and green
+to-report calc_gradient[ base-color ]
+  ;; color gradient between red and green
   report (list (255 - (255 / 100. * base-color)) (255 / 100. * base-color) 0)
 end
 
@@ -171,7 +173,7 @@ to move
   ;; en caso de estar en waiting, decrementamos el tiempo de waiting y
   ;; aumentamos el de energia
 
-  if length next-messages = 0 [
+  ;;if length next-messages = 0 [
     ifelse waiting = 0
     [
       if energy > 0
@@ -191,7 +193,7 @@ to move
       set waiting waiting - 1
       ;show (word "move wait energy [" energy "] waiting [" waiting "]")
     ]
-  ]
+  ;;]
 end
 
 
@@ -390,7 +392,7 @@ BASE-ENERGY
 BASE-ENERGY
 1
 100
-50
+17
 1
 1
 NIL
@@ -405,7 +407,7 @@ T-DESCANSO
 T-DESCANSO
 10
 100
-50
+100
 1
 1
 ticks
@@ -588,6 +590,17 @@ Contrastamos la probabilidad que tiene un agente de ocupar una posicion y el num
 11
 0.0
 1
+
+INPUTBOX
+167
+171
+328
+231
+STOP-AT
+100000
+1
+0
+Number
 
 @#$#@#$#@
 ## WHAT IS IT?
