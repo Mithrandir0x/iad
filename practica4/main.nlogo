@@ -147,141 +147,27 @@ to clear-world-file
 end
 
 to think
-  let new-patch patch-ahead 1 ;; default value needed
-
-  ifelse smell-method = "basic" [ set new-patch best_patch smell-range ]
-[ ifelse smell-method = "scan" [ set new-patch scan_best_patch smell-range ] ;; copy this block to create a new case
-[ ;; default case
-]] ;; add an ] if you create a new case
-
-  ;;let new-patch best_patch
-  ;;let new-patch scan_best_patch smell-range
-  ;;type "Ant " type who type " facing patch " type new-patch
-  face new-patch
-end
-
-to-report best_patch [ ahead ]
-  let best-patch-value 0
-  let counter 1
-  let list-patches []
-  let temp-patch patch-ahead 1
-  let degrees 45
-
-
-  ;; check and recheck and optimize
-  ;; in case counter is higher than 1
-  ;; won't work as expected
-  while [counter <= ahead]
-  [
-    ;; checks patch ahead
-    set temp-patch patch-ahead counter
-    ifelse [pheromones] of  temp-patch > best-patch-value
-    [
-      ;; empty list and add temp-patch
-      set list-patches []
-      set list-patches lput temp-patch list-patches
-      ;; set best value
-      set best-patch-value [pheromones] of temp-patch
-    ]
-    [
-      if [pheromones] of temp-patch = best-patch-value
-      [
-        ;; add patch to a list
-        set list-patches lput temp-patch list-patches
-      ]
-    ]
-
-    ;; checks patch left-and-ahead
-    set temp-patch patch-left-and-ahead degrees counter
-    ifelse [pheromones] of temp-patch > best-patch-value
-    [
-      ;; empty list
-      set list-patches []
-      set list-patches lput temp-patch list-patches
-      ;; set best value
-      set best-patch-value [pheromones] of temp-patch
-    ]
-    [
-      if [pheromones] of temp-patch = best-patch-value
-      [
-        ;; add patch to a list
-        set list-patches lput temp-patch list-patches
-      ]
-    ]
-
-    ;; checks patch left-and-ahead
-    set temp-patch patch-right-and-ahead degrees counter
-    ifelse [pheromones] of temp-patch > best-patch-value
-    [
-      ;; empty list
-      set list-patches []
-      set list-patches lput temp-patch list-patches
-      ;; set best value
-      set best-patch-value [pheromones] of temp-patch
-    ]
-    [
-      if [pheromones] of temp-patch = best-patch-value
-      [
-        ;; add patch to a list
-        set list-patches lput temp-patch list-patches
-      ]
-    ]
-
-    set counter counter + 1
-  ]
-  report one-of list-patches
-
+  face best_patch
 end
 
 
-to-report scan_best_patch[ ahead ]
-  ;; This function looks for the best patch
-  ;; performing an angular search from -45 degrees to 45
-  ;; from patch-ahead 1 to patch-ahead ahead
-  let best-patch-value 0
-  let counter 1
-  let list-patches []
-  let temp-patch patch-ahead 1
-  let current-angle 0
-
-
-  while [counter <= smell-range]
-  [
-    set current-angle (smell-angle * -1)
-    while [ current-angle <= smell-angle]
-    [
-
-      ;; checks patch right-and-ahead
-      set temp-patch patch-right-and-ahead current-angle counter
-      if  not member? temp-patch list-patches
-      ;; checks if that patch is already in the list
-      ;; it could happen
-      [
-        ifelse [pheromones] of temp-patch > best-patch-value
-        [
-          ;; empty list
-          set list-patches []
-          set list-patches lput temp-patch list-patches
-          ;; set best value
-          set best-patch-value [pheromones] of temp-patch
-        ]
-        [
-          if [pheromones] of temp-patch = best-patch-value
-          [
-            ;; add patch to a list
-            set list-patches lput temp-patch list-patches
-          ]
-        ]
-      ]
-
-      set current-angle current-angle + STEP-ANGLE
-    ]
-    set counter counter + 1
-  ]
-  report one-of list-patches
+to-report best_patch
+  ;; this function reports the best patch base on the
+  ;; number of pheromones, performing a cone search
+  ;; if there are some patches with the best number,
+  ;; it reports one of them randomly
+  let patches-set patches_set smell-range smell-cone-angle
+  report one-of (patches-set with-max [pheromones])
 end
 
-
+to-report patches_set [ ahead angle ]
+  ;; returns a patch-set specified by an ahead distance and a cone angle
+  ;; removing the patch where the ants is on
+  let patches-set (patches in-cone ahead angle) with  [[patch-here] of myself != self]
+  ;;show patches-set
+  ;;show sort patches-set
+  report patches-set
+end
 
 to walk
   forward 1
@@ -443,7 +329,7 @@ population
 population
 1
 2000
-514
+1047
 1
 1
 ants
@@ -475,7 +361,7 @@ smell-range
 smell-range
 1
 10
-10
+5
 1
 1
 patches
@@ -490,7 +376,7 @@ diffusion
 diffusion
 0
 1
-0.52
+1
 0.01
 1
 NIL
@@ -505,27 +391,17 @@ evaporation
 evaporation
 0
 1
-0.6
+0.38
 0.01
 1
 NIL
 HORIZONTAL
 
-CHOOSER
-113
-212
-323
-257
-smell-method
-smell-method
-"basic" "scan"
-1
-
 SWITCH
-114
-326
-239
-359
+113
+280
+238
+313
 CLUSTERIZE
 CLUSTERIZE
 0
@@ -604,28 +480,28 @@ NIL
 HORIZONTAL
 
 SLIDER
-113
-271
-278
+114
+235
 304
-smell-angle
-smell-angle
-15
-105
-53
+268
+smell-cone-angle
+smell-cone-angle
+30
+180
+120
 1
 1
 degrees
 HORIZONTAL
 
 TEXTBOX
-285
-274
-360
-292
-default 45\n
-12
-15.0
+119
+214
+233
+232
+recommended 60\n
+13
+0.0
 0
 
 SLIDER
