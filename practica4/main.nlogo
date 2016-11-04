@@ -254,21 +254,18 @@ to dbscan_expand_cluster [ neighbors-list epsilon min-points new-cluster-id ]
         ]
        ]
 
-     ;;if cluster_id = DBSCAN_UNCLASSIFIED
-     ;;[
        set cluster_id new-cluster-id
        set color (new-cluster-id * 10) + 5
-     ;;]
     ]
    ]
 end
 
 to-report dbscan_get_neighbors_list [ epsilon  p]
   ;; returns and agent-set but converted to a list with sort
-  let neighbors-list sort ants in-radius epsilon
+  let neighbors-list sort (ants in-radius epsilon) with [ self != p]
 
   ;; returns the list without p
-  set neighbors-list remove p neighbors-list
+  ;;set neighbors-list remove p neighbors-list
 
   ;;type (word "current " p " list " neighbors-list " \n")
   report neighbors-list
@@ -329,7 +326,7 @@ population
 population
 1
 2000
-1047
+462
 1
 1
 ants
@@ -361,7 +358,7 @@ smell-range
 smell-range
 1
 10
-5
+8
 1
 1
 patches
@@ -391,7 +388,7 @@ evaporation
 evaporation
 0
 1
-0.38
+0.1
 0.01
 1
 NIL
@@ -488,7 +485,7 @@ smell-cone-angle
 smell-cone-angle
 30
 180
-120
+130
 1
 1
 degrees
@@ -499,7 +496,7 @@ TEXTBOX
 214
 233
 232
-recommended 60\n
+recommended 90\n
 13
 0.0
 0
