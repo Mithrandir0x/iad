@@ -11,18 +11,11 @@ globals
   ;; DBSCAN RELATED GLOBAL VARIABLES
   ;;   CLUSTERIZED ITEMS STATES
   DBSCAN_UNCLASSIFIED
-  DBSCAN_NOISE
-  DBSCAN_CORE_POINT
-  DBSCAN_NOT_CORE_POINT
-  DBSCAN_SUCCESS
   ;;   CLUSTER CONFIGURATION
-  DBSCAN_EPSILON
-  DBSCAN_MIN_POINTS
-  DBSCAN_AGENT_CENTROID_COLOR
   DBSCAN_NOISE_COLOR
   ;;   RUNNING VARIABLES
   DBSCAN_CLUSTER_ID
-  DBSCAN_OUTLIERS
+  DBSCAN_NUM_OUTLIERS
 ]
 
 
@@ -32,44 +25,17 @@ to setup
   initialize-world []
 end
 
-to load-world-file
-  ifelse length world-csv-file > 0 [
-    clear-all
-    let ants-to-load []
-    file-open world-csv-file
-    while [ not file-at-end? ] [
-      let row csv:from-row file-read-line
-      if length row = 2 [
-        if is-number? item 0 row [
-          set ants-to-load lput row ants-to-load
-        ]
-      ]
-    ]
-    file-close
-    show (word "Loaded world from [" world-csv-file "] with [" length ants-to-load "] ants")
-    set population length ants-to-load
-    initialize-world ants-to-load
-  ] [
-    show "variable [world-csv-file] cannot be empty."
-  ]
-end
+
 
 to initialize-world [ants-to-load]
   reset-ticks
   ;; globals
-  set VERBOSE false
-  set STEP-ANGLE 10
+
   ;; dbscan stuff
   set DBSCAN_UNCLASSIFIED -1
-  set DBSCAN_NOISE -2
-  set DBSCAN_CORE_POINT 1
-  set DBSCAN_NOT_CORE_POINT 0
-  set DBSCAN_SUCCESS 0
-  set DBSCAN_EPSILON 20
-  set DBSCAN_MIN_POINTS 1
   set DBSCAN_CLUSTER_ID 0
-  set DBSCAN_OUTLIERS 0
-  set DBSCAN_AGENT_CENTROID_COLOR [ 255 0 255 255 ]
+  set DBSCAN_NUM_OUTLIERS 0
+
   set DBSCAN_NOISE_COLOR 0
   ifelse is-list? ants-to-load and length ants-to-load > 0 [
     foreach ants-to-load [
@@ -102,9 +68,9 @@ to run_test ;; run forever function
 
   ;; ants do something
   ask ants [
-    think ;; chooses where to look
+    look_around ;; chooses where to look
     walk ;; walks
-    drop ;; drops pheromones
+    drop_pheromones ;; drops pheromones
   ]
 
 
@@ -121,32 +87,11 @@ to run_test ;; run forever function
     dbscan_run
   ]
 
-
   tick
 end
 
-to save-world-file
-  ifelse length world-csv-file > 0 [
-    let data []
-    set data lput (list ";xcor" "ycor") data
-    ask ants [
-      let ant_pos []
-      set ant_pos lput xcor ant_pos
-      set ant_pos lput ycor ant_pos
-      set data lput ant_pos data
-    ]
-    csv:to-file world-csv-file data
-    show (word "Saved world [" world-csv-file "] with [" length but-first data "] ants")
-  ] [
-    show "variable [world-csv-file] cannot be empty."
-  ]
-end
 
-to clear-world-file
-  set world-csv-file ""
-end
-
-to think
+to look_around
   face best_patch
 end
 
@@ -173,7 +118,7 @@ to walk
   forward 1
 end
 
-to drop
+to drop_pheromones
   ;; increase the pheromones of the current path by 2
   ask patch-here
   [
@@ -182,16 +127,24 @@ to drop
 
 end
 
-;;--------------- DBSCAN IMPLEMENTATION
+;; ========================================= DBSCAN IMPLEMENTATION
 
 to dbscan_run
+  ;; Performs the DBSCAN clustering algorithm
+  ;; Picks an ant, sorting them all by id, then if that ants has not been visited
+  ;; looks for neighbors around with an specified epsilon, if there are any, asigns to that ant a cluster id, loops through the neighbors
+  ;; and follows the same procedure until all the ants have been visited.
+  ;; Ants with a number of neighbor below the number MIN_CLUSTER_SIZE are considered outliers
+  ;; This algorithms follows the pseudocode from the wikipedia , where si pretty well explained
+
+
   ;; from sliders
-  set DBSCAN_MIN_POINTS MIN_CLUSTER_SIZE
-  set DBSCAN_EPSILON CLUSTER_EPSILON
+  let dbscan-min-points MIN_CLUSTER_SIZE
+  let dbscan-epsilon CLUSTER_EPSILON
 
   ;; recalc each iteration
   set DBSCAN_CLUSTER_ID 0
-  set DBSCAN_OUTLIERS 0
+  set DBSCAN_NUM_OUTLIERS 0
 
   ;; locals
   let p-neighbors []
@@ -210,12 +163,12 @@ to dbscan_run
       if not visited
       [
         set visited true
-        set p-neighbors  dbscan_get_neighbors_list  DBSCAN_EPSILON self
-        ifelse length p-neighbors < DBSCAN_MIN_POINTS
+        set p-neighbors  dbscan_get_neighbors_list dbscan-epsilon self
+        ifelse length p-neighbors < dbscan-min-points
         [
           set noise true ;; mark as noise
           set color DBSCAN_NOISE_COLOR;;
-          set DBSCAN_OUTLIERS DBSCAN_OUTLIERS + 1
+          set DBSCAN_NUM_OUTLIERS DBSCAN_NUM_OUTLIERS + 1
         ]
         [
           set DBSCAN_CLUSTER_ID DBSCAN_CLUSTER_ID + 1
@@ -223,7 +176,7 @@ to dbscan_run
           set noise false
           set cluster_id DBSCAN_CLUSTER_ID
           set color (cluster_id * 10) + 5 ;; 0 is black, 5 is grey, the rest are cool colors
-          dbscan_expand_cluster p-neighbors DBSCAN_EPSILON DBSCAN_MIN_POINTS DBSCAN_CLUSTER_ID
+          dbscan_expand_cluster p-neighbors dbscan-epsilon dbscan-min-points DBSCAN_CLUSTER_ID
 
         ]
       ]
@@ -246,7 +199,7 @@ to dbscan_expand_cluster [ neighbors-list epsilon min-points new-cluster-id ]
       if not visited
       [
         set visited true
-        set sub-neighbors-list dbscan_get_neighbors_list  DBSCAN_EPSILON first-neighbor
+        set sub-neighbors-list dbscan_get_neighbors_list  epsilon first-neighbor
         if length sub-neighbors-list >= min-points
         [
           ;; extends neighbors-list
@@ -271,7 +224,50 @@ to-report dbscan_get_neighbors_list [ epsilon  p]
   report neighbors-list
 end
 
-;;;
+;; ================================ CSV SETUP
+
+to load-world-file
+  ifelse length world-csv-file > 0 [
+    clear-all
+    let ants-to-load []
+    file-open world-csv-file
+    while [ not file-at-end? ] [
+      let row csv:from-row file-read-line
+      if length row = 2 [
+        if is-number? item 0 row [
+          set ants-to-load lput row ants-to-load
+        ]
+      ]
+    ]
+    file-close
+    show (word "Loaded world from [" world-csv-file "] with [" length ants-to-load "] ants")
+    set population length ants-to-load
+    initialize-world ants-to-load
+  ] [
+    show "variable [world-csv-file] cannot be empty."
+  ]
+end
+
+to save-world-file
+  ifelse length world-csv-file > 0 [
+    let data []
+    set data lput (list ";xcor" "ycor") data
+    ask ants [
+      let ant_pos []
+      set ant_pos lput xcor ant_pos
+      set ant_pos lput ycor ant_pos
+      set data lput ant_pos data
+    ]
+    csv:to-file world-csv-file data
+    show (word "Saved world [" world-csv-file "] with [" length but-first data "] ants")
+  ] [
+    show "variable [world-csv-file] cannot be empty."
+  ]
+end
+
+to clear-world-file
+  set world-csv-file ""
+end
 @#$#@#$#@
 GRAPHICS-WINDOW
 361
@@ -326,7 +322,7 @@ population
 population
 1
 2000
-462
+1006
 1
 1
 ants
@@ -358,7 +354,7 @@ smell-range
 smell-range
 1
 10
-8
+3
 1
 1
 patches
@@ -373,7 +369,7 @@ diffusion
 diffusion
 0
 1
-1
+0.36
 0.01
 1
 NIL
@@ -388,7 +384,7 @@ evaporation
 evaporation
 0
 1
-0.1
+0.5
 0.01
 1
 NIL
@@ -421,7 +417,7 @@ true
 true
 "" ""
 PENS
-"outliers" 1.0 0 -2674135 true "" "plot DBSCAN_OUTLIERS"
+"outliers" 1.0 0 -2674135 true "" "plot DBSCAN_NUM_OUTLIERS"
 "clusters" 1.0 0 -13840069 true "" "plot DBSCAN_CLUSTER_ID"
 
 MONITOR
@@ -430,7 +426,7 @@ MONITOR
 1564
 92
 outliers
-DBSCAN_OUTLIERS
+DBSCAN_NUM_OUTLIERS
 17
 1
 11
@@ -455,7 +451,7 @@ CLUSTER_EPSILON
 CLUSTER_EPSILON
 0
 20
-5
+3
 1
 1
 NIL
@@ -485,7 +481,7 @@ smell-cone-angle
 smell-cone-angle
 30
 180
-130
+91
 1
 1
 degrees
