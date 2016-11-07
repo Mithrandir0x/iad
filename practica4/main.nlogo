@@ -7,7 +7,7 @@ globals
 [
   VERBOSE
   STEP-ANGLE
-
+  SIMULATION
   ;; DBSCAN RELATED GLOBAL VARIABLES
   ;;   CLUSTERIZED ITEMS STATES
   DBSCAN_UNCLASSIFIED
@@ -49,12 +49,33 @@ to initialize-world [ants-to-load]
       ]
     ]
   ] [
-    ;; ants config
-    create-ants population [
-      set color 5
-      ;;setxy random-xcor random-ycor ;; initial random position
-      move-to one-of patches
-      set shape "circle" ;; helps visualization
+    set SIMULATION false
+
+    ifelse CLUSTERIZE-SETUP
+    [
+      ;; generates clusters of population
+      let cluster-std-dev 20 - NUM-SETUP-CLUSTERS
+      let cluster-size population / NUM-SETUP-CLUSTERS
+      repeat NUM-SETUP-CLUSTERS [
+        let center-x random-xcor / 1.5
+        let center-y random-ycor / 1.5
+        create-ants cluster-size[
+          setxy center-x center-y
+          set heading random 360
+          fd abs random-normal 0 (cluster-std-dev / 2)
+          set color 5
+          set shape "circle" ;; helps visualization
+        ]
+      ]
+    ]
+    [
+      ;; ants config
+      create-ants population [
+        set color 5
+        ;;setxy random-xcor random-ycor ;; initial random position
+        move-to one-of patches
+        set shape "circle" ;; helps visualization
+      ]
     ]
   ]
   ;; patches config
@@ -64,7 +85,20 @@ to initialize-world [ants-to-load]
   ]
 end
 
+
 to run_test ;; run forever function
+  let min-color 0
+  let max-color 50
+  if DYNAMIC-COLOR-SCALE
+  [
+    set max-color max [pheromones] of patches
+    set max-color max (list max-color 5) ;; helps with low values
+  ]
+
+  if SIMULATION[
+    if ticks mod 500 = 0[ set evaporation evaporation - 0.1]
+
+    ]
 
   ;; ants do something
   ask ants [
@@ -74,15 +108,16 @@ to run_test ;; run forever function
   ]
 
 
+
   ;; patches do something
   diffuse pheromones diffusion
   ask patches[
     set pheromones pheromones * ( 1 - evaporation) ;;pay attention
     ;;set pcolor calc_color pheromones
-    set pcolor scale-color red pheromones 50 0
+    set pcolor scale-color red pheromones max-color min-color
   ]
 
-  if CLUSTERIZE and ticks mod update-clusters-each = 0
+  if DBSCAN and ticks mod update-clusters-each = 0
   [
     dbscan_run
   ]
@@ -92,6 +127,12 @@ end
 
 
 to look_around
+  let best-patch best_patch
+  if best-patch = nobody
+  [
+    set heading heading + 90
+    set best-patch best_patch
+  ]
   face best_patch
 end
 
@@ -102,6 +143,7 @@ to-report best_patch
   ;; if there are some patches with the best number,
   ;; it reports one of them randomly
   let patches-set patches_set smell-range smell-cone-angle
+
   report one-of (patches-set with-max [pheromones])
 end
 
@@ -314,15 +356,15 @@ NIL
 1
 
 SLIDER
-113
-33
-323
-66
+115
+32
+325
+65
 population
 population
 1
 2000
-1006
+1036
 1
 1
 ants
@@ -346,25 +388,25 @@ NIL
 1
 
 SLIDER
-113
-75
-324
-108
+115
+74
+326
+107
 smell-range
 smell-range
 1
 10
-3
+5
 1
 1
 patches
 HORIZONTAL
 
 SLIDER
-113
-118
-324
-151
+115
+117
+326
+150
 diffusion
 diffusion
 0
@@ -376,28 +418,28 @@ NIL
 HORIZONTAL
 
 SLIDER
-113
-167
-323
-200
+115
+166
+325
+199
 evaporation
 evaporation
 0
 1
-0.5
+0.4
 0.01
 1
 NIL
 HORIZONTAL
 
 SWITCH
-113
-280
-238
-313
-CLUSTERIZE
-CLUSTERIZE
-0
+115
+279
+240
+312
+DBSCAN
+DBSCAN
+1
 1
 -1000
 
@@ -451,7 +493,7 @@ CLUSTER_EPSILON
 CLUSTER_EPSILON
 0
 20
-3
+5
 1
 1
 NIL
@@ -473,25 +515,25 @@ NIL
 HORIZONTAL
 
 SLIDER
-114
-235
-304
-268
+116
+234
+306
+267
 smell-cone-angle
 smell-cone-angle
 30
 180
-91
+130
 1
 1
 degrees
 HORIZONTAL
 
 TEXTBOX
-119
-214
-233
-232
+121
+213
+235
+231
 recommended 90\n
 13
 0.0
@@ -518,7 +560,7 @@ INPUTBOX
 505
 688
 world-csv-file
-D:\\Repositarios\\iad\\practica4\\worlds\\world_00.csv
+NIL
 1
 0
 String
@@ -573,6 +615,43 @@ NIL
 NIL
 NIL
 1
+
+SWITCH
+114
+340
+279
+373
+CLUSTERIZE-SETUP
+CLUSTERIZE-SETUP
+0
+1
+-1000
+
+SLIDER
+114
+384
+289
+417
+NUM-SETUP-CLUSTERS
+NUM-SETUP-CLUSTERS
+1
+50
+15
+1
+1
+NIL
+HORIZONTAL
+
+SWITCH
+112
+432
+306
+465
+DYNAMIC-COLOR-SCALE
+DYNAMIC-COLOR-SCALE
+0
+1
+-1000
 
 @#$#@#$#@
 ## ESTADO DE LA PRACTICA
@@ -930,15 +1009,18 @@ NetLogo 5.3.1
 @#$#@#$#@
 @#$#@#$#@
 <experiments>
-  <experiment name="Hello World Experiment" repetitions="1" runMetricsEveryStep="true">
-    <setup>setup</setup>
+  <experiment name="Hello World Experiment" repetitions="2" runMetricsEveryStep="true">
+    <setup>setup
+set SIMULATION true</setup>
     <go>run_test</go>
-    <timeLimit steps="30"/>
+    <timeLimit steps="5000"/>
     <metric>DBSCAN_CLUSTER_ID</metric>
+    <metric>DBSCAN_NUM_OUTLIERS</metric>
+    <metric>evaporation</metric>
     <enumeratedValueSet variable="CLUSTER_EPSILON">
       <value value="5"/>
     </enumeratedValueSet>
-    <enumeratedValueSet variable="smell-range">
+    <enumeratedValueSet variable="smell-cone-angle">
       <value value="5"/>
     </enumeratedValueSet>
     <enumeratedValueSet variable="evaporation">
@@ -947,7 +1029,7 @@ NetLogo 5.3.1
     <enumeratedValueSet variable="world-csv-file">
       <value value="&quot;&quot;"/>
     </enumeratedValueSet>
-    <enumeratedValueSet variable="smell-angle">
+    <enumeratedValueSet variable="smell-cone-angle">
       <value value="53"/>
     </enumeratedValueSet>
     <enumeratedValueSet variable="update-clusters-each">
@@ -955,9 +1037,6 @@ NetLogo 5.3.1
     </enumeratedValueSet>
     <enumeratedValueSet variable="diffusion">
       <value value="0.52"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="smell-method">
-      <value value="&quot;basic&quot;"/>
     </enumeratedValueSet>
     <enumeratedValueSet variable="CLUSTERIZE">
       <value value="true"/>
