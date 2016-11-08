@@ -30,13 +30,12 @@ end
 to initialize-world [ants-to-load]
   reset-ticks
   ;; globals
-
   ;; dbscan stuff
   set DBSCAN_UNCLASSIFIED -1
   set DBSCAN_CLUSTER_ID 0
   set DBSCAN_NUM_OUTLIERS 0
-
   set DBSCAN_NOISE_COLOR 0
+
   ifelse is-list? ants-to-load and length ants-to-load > 0 [
     foreach ants-to-load [
       create-ants 1 [
@@ -78,6 +77,8 @@ to initialize-world [ants-to-load]
       ]
     ]
   ]
+
+
   ;; patches config
   ask patches [
     set pcolor [ 255 255 255 ]
@@ -98,7 +99,7 @@ to run_test ;; run forever function
   if SIMULATION[
     if ticks mod 500 = 0[ set evaporation evaporation - 0.1]
 
-    ]
+  ]
 
   ;; ants do something
   ask ants [
@@ -128,7 +129,7 @@ end
 
 to look_around
   let best-patch best_patch
-  if best-patch = nobody
+  while [best-patch = nobody]
   [
     set heading heading + 90
     set best-patch best_patch
@@ -364,7 +365,7 @@ population
 population
 1
 2000
-1036
+1000
 1
 1
 ants
@@ -411,7 +412,7 @@ diffusion
 diffusion
 0
 1
-0.36
+0.5
 0.01
 1
 NIL
@@ -426,7 +427,7 @@ evaporation
 evaporation
 0
 1
-0.4
+0.2
 0.01
 1
 NIL
@@ -439,7 +440,7 @@ SWITCH
 312
 DBSCAN
 DBSCAN
-1
+0
 1
 -1000
 
@@ -508,7 +509,7 @@ MIN_CLUSTER_SIZE
 MIN_CLUSTER_SIZE
 1
 10
-5
+10
 1
 1
 NIL
@@ -534,7 +535,7 @@ TEXTBOX
 213
 235
 231
-recommended 90\n
+360º is a circle\n
 13
 0.0
 0
@@ -548,7 +549,7 @@ update-clusters-each
 update-clusters-each
 1
 10
-5
+10
 1
 1
 ticks
@@ -623,7 +624,7 @@ SWITCH
 373
 CLUSTERIZE-SETUP
 CLUSTERIZE-SETUP
-0
+1
 1
 -1000
 
@@ -649,9 +650,19 @@ SWITCH
 465
 DYNAMIC-COLOR-SCALE
 DYNAMIC-COLOR-SCALE
-0
+1
 1
 -1000
+
+TEXTBOX
+290
+388
+440
+406
+do not touch!
+11
+15.0
+1
 
 @#$#@#$#@
 ## ESTADO DE LA PRACTICA
@@ -1046,6 +1057,150 @@ set SIMULATION true</setup>
     </enumeratedValueSet>
     <enumeratedValueSet variable="MIN_CLUSTER_SIZE">
       <value value="5"/>
+    </enumeratedValueSet>
+  </experiment>
+  <experiment name="analize outliers and clusters using evaporation" repetitions="1" runMetricsEveryStep="true">
+    <setup>setup
+dbscan_run</setup>
+    <go>run_test</go>
+    <timeLimit steps="1000"/>
+    <metric>DBSCAN_NUM_OUTLIERS</metric>
+    <enumeratedValueSet variable="MIN_CLUSTER_SIZE">
+      <value value="10"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="update-clusters-each">
+      <value value="10"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="diffusion">
+      <value value="0.5"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="DBSCAN">
+      <value value="true"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="smell-cone-angle">
+      <value value="130"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="CLUSTER_EPSILON">
+      <value value="5"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="smell-range">
+      <value value="5"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="population">
+      <value value="1000"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="CLUSTERIZE-SETUP">
+      <value value="false"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="NUM-SETUP-CLUSTERS">
+      <value value="15"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="evaporation">
+      <value value="0.5"/>
+      <value value="0.4"/>
+      <value value="0.3"/>
+      <value value="0.2"/>
+      <value value="0.1"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="world-csv-file">
+      <value value="&quot;&quot;"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="DYNAMIC-COLOR-SCALE">
+      <value value="false"/>
+    </enumeratedValueSet>
+  </experiment>
+  <experiment name="analize outliers and clusters using diffussion" repetitions="1" runMetricsEveryStep="true">
+    <setup>setup
+dbscan_run</setup>
+    <go>run_test</go>
+    <timeLimit steps="1000"/>
+    <metric>DBSCAN_NUM_OUTLIERS</metric>
+    <enumeratedValueSet variable="MIN_CLUSTER_SIZE">
+      <value value="10"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="update-clusters-each">
+      <value value="10"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="diffusion">
+      <value value="0.6"/>
+      <value value="0.7"/>
+      <value value="0.8"/>
+      <value value="0.9"/>
+      <value value="1"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="DBSCAN">
+      <value value="true"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="smell-cone-angle">
+      <value value="130"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="CLUSTER_EPSILON">
+      <value value="5"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="smell-range">
+      <value value="5"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="population">
+      <value value="1000"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="CLUSTERIZE-SETUP">
+      <value value="false"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="NUM-SETUP-CLUSTERS">
+      <value value="15"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="evaporation">
+      <value value="0.5"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="world-csv-file">
+      <value value="&quot;&quot;"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="DYNAMIC-COLOR-SCALE">
+      <value value="false"/>
+    </enumeratedValueSet>
+  </experiment>
+  <experiment name="analize outliers and clusters using smell-cone-angle" repetitions="1" runMetricsEveryStep="true">
+    <setup>setup
+dbscan_run</setup>
+    <go>run_test</go>
+    <timeLimit steps="1000"/>
+    <metric>DBSCAN_NUM_OUTLIERS</metric>
+    <enumeratedValueSet variable="MIN_CLUSTER_SIZE">
+      <value value="10"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="update-clusters-each">
+      <value value="10"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="diffusion">
+      <value value="0.9"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="DBSCAN">
+      <value value="true"/>
+    </enumeratedValueSet>
+    <steppedValueSet variable="smell-cone-angle" first="10" step="20" last="150"/>
+    <enumeratedValueSet variable="CLUSTER_EPSILON">
+      <value value="5"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="smell-range">
+      <value value="5"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="population">
+      <value value="1000"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="CLUSTERIZE-SETUP">
+      <value value="false"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="NUM-SETUP-CLUSTERS">
+      <value value="15"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="evaporation">
+      <value value="0.1"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="world-csv-file">
+      <value value="&quot;&quot;"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="DYNAMIC-COLOR-SCALE">
+      <value value="false"/>
     </enumeratedValueSet>
   </experiment>
 </experiments>
