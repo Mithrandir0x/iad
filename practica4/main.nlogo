@@ -61,7 +61,7 @@ to initialize-world [ants-to-load]
         create-ants cluster-size[
           setxy center-x center-y
           set heading random 360
-          fd abs random-normal 0 (cluster-std-dev / 2)
+          fd abs random-normal 1 (cluster-std-dev / 2)
           set color 5
           set shape "circle" ;; helps visualization
         ]
@@ -365,7 +365,7 @@ population
 population
 1
 2000
-1000
+500
 1
 1
 ants
@@ -427,7 +427,7 @@ evaporation
 evaporation
 0
 1
-0.2
+0.8
 0.01
 1
 NIL
@@ -524,7 +524,7 @@ smell-cone-angle
 smell-cone-angle
 30
 180
-130
+90
 1
 1
 degrees
@@ -549,7 +549,7 @@ update-clusters-each
 update-clusters-each
 1
 10
-10
+5
 1
 1
 ticks
@@ -662,6 +662,23 @@ TEXTBOX
 do not touch!
 11
 15.0
+1
+
+BUTTON
+26
+122
+96
+155
+run 1
+run_test
+NIL
+1
+T
+OBSERVER
+NIL
+R
+NIL
+NIL
 1
 
 @#$#@#$#@
@@ -1201,6 +1218,54 @@ dbscan_run</setup>
     </enumeratedValueSet>
     <enumeratedValueSet variable="DYNAMIC-COLOR-SCALE">
       <value value="false"/>
+    </enumeratedValueSet>
+  </experiment>
+  <experiment name="clusters based on smell-cone" repetitions="1" runMetricsEveryStep="true">
+    <setup>setup
+dbscan_run</setup>
+    <go>run_test</go>
+    <timeLimit steps="1000"/>
+    <metric>DBSCAN_CLUSTER_ID</metric>
+    <enumeratedValueSet variable="diffusion">
+      <value value="1"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="MIN_CLUSTER_SIZE">
+      <value value="10"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="CLUSTER_EPSILON">
+      <value value="5"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="DYNAMIC-COLOR-SCALE">
+      <value value="true"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="population">
+      <value value="1000"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="CLUSTERIZE-SETUP">
+      <value value="true"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="NUM-SETUP-CLUSTERS">
+      <value value="15"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="DBSCAN">
+      <value value="true"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="world-csv-file">
+      <value value="&quot;&quot;"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="update-clusters-each">
+      <value value="5"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="evaporation">
+      <value value="0.05"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="smell-cone-angle">
+      <value value="80"/>
+      <value value="120"/>
+      <value value="160"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="smell-range">
+      <value value="5"/>
     </enumeratedValueSet>
   </experiment>
 </experiments>
