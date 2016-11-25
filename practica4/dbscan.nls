@@ -1,0 +1,96 @@
+;; ========================================= DBSCAN IMPLEMENTATION
+
+to dbscan_run
+  ;; Performs the DBSCAN clustering algorithm
+  ;; Picks an ant, sorting them all by id, then if that ants has not been visited
+  ;; looks for neighbors around with an specified epsilon, if there are any, asigns to that ant a cluster id, loops through the neighbors
+  ;; and follows the same procedure until all the ants have been visited.
+  ;; Ants with a number of neighbor below the number MIN_CLUSTER_SIZE are considered outliers
+  ;; This algorithms follows the pseudocode from the wikipedia , where si pretty well explained
+
+
+  ;; from sliders
+  let dbscan-min-points MIN_CLUSTER_SIZE
+  let dbscan-epsilon CLUSTER_EPSILON
+
+  ;; recalc each iteration
+  set DBSCAN_CLUSTER_ID 0
+  set DBSCAN_NUM_OUTLIERS 0
+
+  ;; locals
+  let p-neighbors []
+
+  ;; reset some agent values
+  ask ants[
+    set visited false
+    set noise false
+    set cluster_id DBSCAN_UNCLASSIFIED
+  ]
+
+  ;; instead of ask ants, loops them sorted in order to help visualization
+  foreach sort-on [who] ants
+  [
+    ask ?[ ;; aks the current ant
+      if not visited
+      [
+        set visited true
+        set p-neighbors  dbscan_get_neighbors_list dbscan-epsilon self
+        ifelse length p-neighbors < dbscan-min-points
+        [
+          set noise true ;; mark as noise
+          set color DBSCAN_NOISE_COLOR;;
+          set DBSCAN_NUM_OUTLIERS DBSCAN_NUM_OUTLIERS + 1
+        ]
+        [
+          set DBSCAN_CLUSTER_ID DBSCAN_CLUSTER_ID + 1
+
+          set noise false
+          set cluster_id DBSCAN_CLUSTER_ID
+          set color (cluster_id * 10) + 5 ;; 0 is black, 5 is grey, the rest are cool colors
+          dbscan_expand_cluster p-neighbors dbscan-epsilon dbscan-min-points DBSCAN_CLUSTER_ID
+
+        ]
+      ]
+    ]
+  ]
+end
+
+to dbscan_expand_cluster [ neighbors-list epsilon min-points new-cluster-id ]
+  let sub-neighbors-list []
+  let first-neighbor self
+
+  while [ not empty? neighbors-list]
+  [
+    ;; extracts first neighbor from the list
+    set first-neighbor first  neighbors-list
+    set neighbors-list remove first-neighbor neighbors-list
+
+    ask first-neighbor
+    [
+      if not visited
+      [
+        set visited true
+        set sub-neighbors-list dbscan_get_neighbors_list  epsilon first-neighbor
+        if length sub-neighbors-list >= min-points
+        [
+          ;; extends neighbors-list
+          set neighbors-list sentence neighbors-list sub-neighbors-list
+        ]
+       ]
+
+       set cluster_id new-cluster-id
+       set color (new-cluster-id * 10) + 5
+    ]
+   ]
+end
+
+to-report dbscan_get_neighbors_list [ epsilon  p]
+  ;; returns and agent-set but converted to a list with sort
+  let neighbors-list sort (ants in-radius epsilon) with [ self != p]
+
+  ;; returns the list without p
+  ;;set neighbors-list remove p neighbors-list
+
+  ;;type (word "current " p " list " neighbors-list " \n")
+  report neighbors-list
+end
