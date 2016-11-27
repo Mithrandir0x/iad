@@ -35,7 +35,7 @@ INPUTBOX
 1173
 107
 world-csv-file
-NIL
+worlds/hello-world
 1
 0
 String

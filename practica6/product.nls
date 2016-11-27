@@ -1,2 +1,6 @@
 
 breed [ products product ]
+
+products-own [
+    template-product-id
+]
