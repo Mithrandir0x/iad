@@ -1,7 +1,8 @@
 
 to load-world-file
-  ;; ifelse length world-csv-file > 0 [
-  ;;   clear-all
+  ifelse length world-csv-file > 0 [
+    clear-all
+    load-template-products
   ;;   file-open world-csv-file
   ;;   while [ not file-at-end? ] [
   ;;     let row csv:from-row file-read-line
@@ -15,9 +16,9 @@ to load-world-file
   ;;   show (word "Loaded world from [" world-csv-file "] with [" length ants-to-load "] ants")
   ;;   set population length ants-to-load
   ;;   initialize-world ants-to-load
-  ;; ] [
-  ;;   show "variable [world-csv-file] cannot be empty."
-  ;; ]
+  ] [
+    show "variable [world-csv-file] cannot be empty."
+  ]
 end
 
 to save-world-file
@@ -46,7 +47,8 @@ to load-template-products
   while [ not file-at-end? ] [
     let row csv:from-row file-read-line
     if is-number? item 0 row [
-      
+      add-template-product row
+      show (word "Loaded product [" item 1 row "]")
     ]
   ]
 end

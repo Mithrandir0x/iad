@@ -14,6 +14,10 @@ to add-template-product [row]
   table:put TEMPLATE-PRODUCTS item 0 row value
 end
 
+to-report get-template-ids
+  report table:keys TEMPLATE-PRODUCTS
+end
+
 to-report get-template-name [template_id]
   report get-template-row-field template_id 1
 end
