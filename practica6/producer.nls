@@ -4,7 +4,33 @@ breed [ producers producer ]
 producers-own [
   id
   product-difficulty-table
+  product-in-process
+  stash
+  
+  current-messages
+  next-messages
 ]
+
+to producer-act
+end
+
+to initialize-stash
+  set stash table:make
+end
+
+to-report produce-product [product-id]
+  let upt get-template-units_per_tick product-id
+  let dif get-difficulty product-id
+  report upt * dif
+end
+
+to stash-product [product-id add-quantity]
+  let current-quantity 0
+  if table:has-key? stash product-id [
+    set current-quantity table:get stash product-id
+  ]
+  table:put stash product-id ( current-quantity + add-quantity )
+end
 
 to-report get-difficulty-table [product-producer-def]
   let difficulty-table table:make
@@ -17,3 +43,4 @@ end
 to-report get-difficulty [product-id]
   report table:get product-difficulty-table product-id
 end
+

@@ -19,11 +19,11 @@ to-report get-template-ids
 end
 
 to-report get-template-name [template_id]
-  report get-template-row-field template_id 1
+  report get-template-row-field template_id 0
 end
 
 to-report get-template-units_per_tick [template_id]
-  report get-template-row-field template_id 2
+  report get-template-row-field template_id 1
 end
 
 to-report get-template-row-field [template_id row_field_pos]

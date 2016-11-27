@@ -3,4 +3,7 @@ breed [ markets market ]
 
 markets-own [
   influence-radius
+  
+  current-messages
+  next-messages
 ]

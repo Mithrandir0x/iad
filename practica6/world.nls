@@ -18,6 +18,7 @@ to initialize-world [markets-to-load products-to-load producers-to-load]
     foreach products-to-load [
       create-products 1 [
         set template-product-id item 0 ?1
+        set units-per-tick ( get-template-units_per_tick template-product-id )
         set xcor item 1 ?1
         set ycor item 2 ?1
         set shape "plant"
@@ -30,6 +31,8 @@ to initialize-world [markets-to-load products-to-load producers-to-load]
         set ycor item 2 ?1
         set product-difficulty-table get-difficulty-table item 3 ?1
         set shape "person"
+        
+        initialize-stash
       ]
     ]
   ] [

@@ -1,6 +1,10 @@
 extensions[csv array table]
 
 __includes["world.nls" "template_product.nls" "market.nls" "product.nls" "producer.nls"]
+
+to go
+  tick
+end
 @#$#@#$#@
 GRAPHICS-WINDOW
 210
