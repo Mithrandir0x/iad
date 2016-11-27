@@ -1,6 +1,6 @@
+extensions[csv array table]
 
-__includes["world.nls"]
-
+__includes["world.nls" "template_product.nls" "market.nls" "product.nls" "producer.nls"]
 @#$#@#$#@
 GRAPHICS-WINDOW
 210

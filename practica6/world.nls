@@ -2,7 +2,6 @@
 to load-world-file
   ;; ifelse length world-csv-file > 0 [
   ;;   clear-all
-  ;;   let ants-to-load []
   ;;   file-open world-csv-file
   ;;   while [ not file-at-end? ] [
   ;;     let row csv:from-row file-read-line
@@ -43,6 +42,9 @@ to clear-world-file
 end
 
 to load-template-products
+  file-open (word world-csv-file "template_products.csv")
+  while [ not file-at-end? ] [
+  ]
 end
 
 to load-markets
