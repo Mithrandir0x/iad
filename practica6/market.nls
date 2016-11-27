@@ -1,2 +1,6 @@
 
 breed [ markets market ]
+
+markets-own [
+    influence-radius
+]

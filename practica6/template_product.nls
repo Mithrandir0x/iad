@@ -1,3 +1,28 @@
 
-to test-table
+globals [
+  TEMPLATE-PRODUCTS
+]
+
+to initialize-template-products-table
+  set TEMPLATE-PRODUCTS table:make
+end
+
+to add-template-product [row]
+  let value []
+  set value lput item 1 row value
+  set value lput item 2 row value
+  table:put TEMPLATE-PRODUCTS item 0 row value
+end
+
+to-report get-template-name [template_id]
+  report get-template-row-field template_id 1
+end
+
+to-report get-template-units_per_tick [template_id]
+  report get-template-row-field template_id 2
+end
+
+to-report get-template-row-field [template_id row_field_pos]
+  let row table:get TEMPLATE-PRODUCTS template_id
+  report item row_field_pos row
 end

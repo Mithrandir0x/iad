@@ -1,2 +1,6 @@
 
 breed [ producers producer ]
+
+producers-own [
+    id
+]

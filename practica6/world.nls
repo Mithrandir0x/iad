@@ -44,6 +44,10 @@ end
 to load-template-products
   file-open (word world-csv-file "template_products.csv")
   while [ not file-at-end? ] [
+    let row csv:from-row file-read-line
+    if is-number? item 0 row [
+      
+    ]
   ]
 end
 

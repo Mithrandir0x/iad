@@ -30,10 +30,10 @@ ticks
 30.0
 
 INPUTBOX
-115
-628
-505
-688
+783
+47
+1173
+107
 world-csv-file
 NIL
 1
@@ -41,10 +41,10 @@ NIL
 String
 
 BUTTON
-17
-621
-106
-654
+685
+40
+774
+73
 Save To
 save-world-file
 NIL
@@ -58,10 +58,10 @@ NIL
 1
 
 BUTTON
-17
-661
-106
-694
+685
+80
+774
+113
 Load From
 ifelse length world-csv-file > 0 [\n  load-world-file\n] [\n  show \"variable [world-csv-file] cannot be empty.\"\n]
 NIL
@@ -75,10 +75,10 @@ NIL
 1
 
 BUTTON
-514
-641
-577
-674
+1182
+60
+1245
+93
 Clear
 clear-world-file
 NIL
