@@ -12,6 +12,7 @@ to initialize-world [markets-to-load products-to-load producers-to-load]
         set xcor item 0 ?1
         set ycor item 1 ?1
         set influence-radius item 2 ?1
+        set shape "house"
       ]
     ]
     foreach products-to-load [
@@ -19,9 +20,17 @@ to initialize-world [markets-to-load products-to-load producers-to-load]
         set template-product-id item 0 ?1
         set xcor item 1 ?1
         set ycor item 2 ?1
+        set shape "plant"
       ]
     ]
     foreach producers-to-load [
+      create-producers 1 [
+        set id item 0 ?1
+        set xcor item 1 ?1
+        set ycor item 2 ?1
+        set product-difficulty-table get-difficulty-table item 3 ?1
+        set shape "person"
+      ]
     ]
   ] [
     ;; Random world

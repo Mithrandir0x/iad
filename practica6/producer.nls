@@ -2,5 +2,18 @@
 breed [ producers producer ]
 
 producers-own [
-    id
+  id
+  product-difficulty-table
 ]
+
+to-report get-difficulty-table [product-producer-def]
+  let difficulty-table table:make
+  foreach product-producer-def [
+    table:put difficulty-table item 0 ?1 item 1 ?1
+  ]
+  report difficulty-table
+end
+
+to-report get-difficulty [product-id]
+  report table:get product-difficulty-table product-id
+end
