@@ -2,6 +2,7 @@
 breed [ producers producer ]
 
 producers-own [
+  id
   product-difficulty-table
   product-in-process
   stash
@@ -67,6 +68,14 @@ to-report get-difficulty [product-id]
   report table:get product-difficulty-table product-id
 end
 
+to-report get-product-quantity [product-id]
+  ifelse table:has-key? stash product-id [
+    report table:get stash product-id
+  ] [
+    report 0
+  ]
+end
+
 ;; Product Selection Strategies
 
 to-report select-product
@@ -86,7 +95,7 @@ end
 to-report select-max-ratio-product
   let table product-difficulty-table
   let best-product max-n-of 1 products [
-    ( table:get table template-product-id ) * units-per-tick
+    (1 - ( table:get table template-product-id )) * units-per-tick
   ]
   report best-product
 end
@@ -94,7 +103,7 @@ end
 to-report select-easiest-to-produce-product
   let table product-difficulty-table
   let best-product max-n-of 1 products [
-    table:get table template-product-id
+    1 - (table:get table template-product-id)
   ]
   report best-product
 end
