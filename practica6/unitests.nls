@@ -1,0 +1,16 @@
+to test-strategies
+  show (word "easiest-to-produce for producer 1 expected 1 ")
+  ask producers with [ id = 1 ] [
+    show [ word "id: " template-product-id ] of select-easiest-to-produce-product 
+    ]
+  
+  show (word "most-abundant for producer 1 expected 2")
+  ask producers with [ id = 1 ] [
+    show [ word "id: " template-product-id ] of select-most-abundant-product 
+    ]
+  
+  show (word "max-ratio-product for producer 1 expected 2")
+  ask producers with [ id = 1 ] [
+    show [ word "id: " template-product-id ] of select-max-ratio-product 
+    ]
+end
