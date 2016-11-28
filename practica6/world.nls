@@ -29,6 +29,7 @@ to initialize-world [markets-to-load products-to-load producers-to-load]
     ]
     foreach producers-to-load [
       create-producers 1 [
+        set id item 0 ?1
         set xcor item 1 ?1
         set ycor item 2 ?1
         set product-selection-strategy item 3 ?1
