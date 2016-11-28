@@ -3,7 +3,11 @@ breed [ markets market ]
 
 markets-own [
   influence-radius
+  market-day-tick
   
   current-messages
   next-messages
 ]
+
+to market-run
+end

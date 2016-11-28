@@ -1,2 +1,2 @@
-;x,y,influence-radius
-0,0,25
+;x,y,influence-radius,market-day-tick
+0,0,25,7

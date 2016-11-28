@@ -7,11 +7,21 @@ producers-own [
   stash
   
   product-selection-strategy
-  product-selection-strategy-table
   
   current-messages
   next-messages
 ]
+
+globals [
+  PRODUCT-SELECTION-STRATEGY-TABLE
+]
+
+to Initialize-product-selection-strategy-table
+  set PRODUCT-SELECTION-STRATEGY-TABLE table:make
+  table:put PRODUCT-SELECTION-STRATEGY-TABLE 1 task select-max-ratio-product
+  table:put PRODUCT-SELECTION-STRATEGY-TABLE 2 task select-easiest-to-produce-product
+  table:put PRODUCT-SELECTION-STRATEGY-TABLE 3 task select-most-abundant-product
+end
 
 to producer-run
   producer-produce-product
@@ -25,19 +35,14 @@ to producer-produce-product
   ]
 end
 
-to initialize-stash
+to initialize-producer
   set stash table:make
-  
-  set product-selection-strategy-table table:make
-  table:put product-selection-strategy-table 1 task select-max-ratio-product
-  table:put product-selection-strategy-table 2 task select-easiest-to-produce-product
-  table:put product-selection-strategy-table 3 task select-most-abundant-product
 end
 
 to-report produce-product [product-id]
   let upt get-template-units_per_tick product-id
   let dif get-difficulty product-id
-  show (word "Producing product [" product-id "@" get-template-name product-id "] units-per-tick [" upt "] difficulty [" dif "] upt * dif [" round ( upt * dif ) "]")
+  show (word "Producing product [" product-id "]:[" get-template-name product-id "] units-per-tick [" upt "] difficulty [" dif "] upt * dif [" round ( upt * dif ) "]")
   report round ( upt * dif )
 end
 
@@ -46,7 +51,7 @@ to stash-product [product-id add-quantity]
   if table:has-key? stash product-id [
     set current-quantity table:get stash product-id
   ]
-  show (word "Stashing product [" product-id "@" get-template-name product-id "] quantity [" ( current-quantity + add-quantity ) "]")
+  show (word "Stashing product [" product-id "]:[" get-template-name product-id "] current-quantity [" current-quantity "] add-quantity [" add-quantity "]")
   table:put stash product-id ( current-quantity + add-quantity )
 end
 
@@ -66,12 +71,12 @@ end
 
 to-report select-product
   let selected-product-id -1
-  ifelse table:has-key? product-selection-strategy-table product-selection-strategy [
-    let product-selection-strategy-task table:get product-selection-strategy-table product-selection-strategy
+  ifelse table:has-key? PRODUCT-SELECTION-STRATEGY-TABLE product-selection-strategy [
+    let product-selection-strategy-task table:get PRODUCT-SELECTION-STRATEGY-TABLE product-selection-strategy
     ask runresult product-selection-strategy-task [
       set selected-product-id template-product-id
     ]
-    show (word "Selected product [" selected-product-id "@" get-template-name selected-product-id "]")
+    show (word "Selected product [" selected-product-id "]:[" get-template-name selected-product-id "]")
   ] [
     show "No product-selection-strategy set."
   ]

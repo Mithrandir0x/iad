@@ -4,6 +4,8 @@ to initialize-random-world
 end
 
 to initialize-world [markets-to-load products-to-load producers-to-load]
+  Initialize-product-selection-strategy-table
+  
   ifelse length markets-to-load > 0 and length products-to-load > 0 and length producers-to-load > 0 [
     ;; Loaded world
     show "Loading world..."
@@ -12,6 +14,7 @@ to initialize-world [markets-to-load products-to-load producers-to-load]
         set xcor item 0 ?1
         set ycor item 1 ?1
         set influence-radius item 2 ?1
+        set market-day-tick item 3 ?1
         set shape "house"
       ]
     ]
@@ -32,7 +35,7 @@ to initialize-world [markets-to-load products-to-load producers-to-load]
         set product-difficulty-table get-difficulty-table item 4 ?1
         set shape "person"
         
-        initialize-stash
+        initialize-producer
       ]
     ]
   ] [
