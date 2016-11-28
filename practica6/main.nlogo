@@ -1,15 +1,27 @@
 extensions[csv array table]
 
-__includes["world.nls" "template_product.nls" "market.nls" "product.nls" "producer.nls"]
+__includes["world.nls" "template_product.nls" "market.nls" "product.nls" "producer.nls" "unitests.nls"]
+
+to setup
+  ifelse length world-csv-file > 0 [
+  load-world-file
+  ] [
+  show "variable [world-csv-file] cannot be empty."
+  ]
+  reset-ticks
+end
 
 to go
   tick
+
+  ask producers [ producer-run ]
+  ask markets [ market-run ]
 end
 @#$#@#$#@
 GRAPHICS-WINDOW
-193
+5
 10
-632
+444
 470
 16
 16
@@ -34,9 +46,9 @@ ticks
 30.0
 
 INPUTBOX
-783
+595
 47
-1173
+985
 107
 world-csv-file
 worlds/hello-world
@@ -45,9 +57,9 @@ worlds/hello-world
 String
 
 BUTTON
-685
+497
 40
-774
+586
 73
 Save To
 save-world-file
@@ -62,9 +74,9 @@ NIL
 1
 
 BUTTON
-685
+497
 80
-774
+586
 113
 Load From
 ifelse length world-csv-file > 0 [\n  load-world-file\n] [\n  show \"variable [world-csv-file] cannot be empty.\"\n]
@@ -79,9 +91,9 @@ NIL
 1
 
 BUTTON
-1182
+994
 60
-1245
+1057
 93
 Clear
 clear-world-file
@@ -91,6 +103,57 @@ T
 OBSERVER
 NIL
 NIL
+NIL
+NIL
+1
+
+PLOT
+7
+503
+357
+669
+Global Productions
+NIL
+NIL
+0.0
+10.0
+0.0
+10.0
+true
+true
+"ask products[\n  create-temporary-plot-pen get-template-name template-product-id\n  set-plot-pen-color color ; set the pen to the color of the party\n]" "ask products [\n  set-current-plot-pen get-template-name template-product-id\n  plot sum [ get-product-quantity [template-product-id] of myself ] of producers\n]"
+PENS
+
+BUTTON
+496
+131
+559
+164
+Run
+go
+T
+1
+T
+OBSERVER
+NIL
+R
+NIL
+NIL
+1
+
+BUTTON
+571
+131
+645
+164
+Setup
+setup
+NIL
+1
+T
+OBSERVER
+NIL
+S
 NIL
 NIL
 1
