@@ -39,8 +39,8 @@ GRAPHICS-WINDOW
 16
 -16
 16
-0
-0
+1
+1
 1
 ticks
 30.0
@@ -110,8 +110,8 @@ NIL
 PLOT
 7
 503
-357
-669
+440
+827
 Global Productions
 NIL
 NIL
