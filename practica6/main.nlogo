@@ -7,9 +7,9 @@ to go
 end
 @#$#@#$#@
 GRAPHICS-WINDOW
-210
+193
 10
-649
+632
 470
 16
 16

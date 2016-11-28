@@ -26,10 +26,10 @@ to initialize-world [markets-to-load products-to-load producers-to-load]
     ]
     foreach producers-to-load [
       create-producers 1 [
-        set id item 0 ?1
         set xcor item 1 ?1
         set ycor item 2 ?1
-        set product-difficulty-table get-difficulty-table item 3 ?1
+        set product-selection-strategy item 3 ?1
+        set product-difficulty-table get-difficulty-table item 4 ?1
         set shape "person"
         
         initialize-stash
@@ -98,6 +98,7 @@ to-report load-producers
         set producer-conf lput producer-id producer-conf
         set producer-conf lput ( item 1 row ) producer-conf
         set producer-conf lput ( item 2 row ) producer-conf
+        set producer-conf lput ( item 3 row ) producer-conf
         set producer-conf lput ( load-producer-product-parameters producer-id ) producer-conf
         set producers-to-load lput producer-conf producers-to-load
         

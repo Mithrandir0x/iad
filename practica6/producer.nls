@@ -2,26 +2,43 @@
 breed [ producers producer ]
 
 producers-own [
-  id
   product-difficulty-table
   product-in-process
   stash
+  
+  product-selection-strategy
+  product-selection-strategy-table
   
   current-messages
   next-messages
 ]
 
-to producer-act
+to producer-run
+  producer-produce-product
+end
+
+to producer-produce-product
+  let selected-product-id select-product
+  if selected-product-id != -1 [
+    let quantity produce-product selected-product-id
+    stash-product selected-product-id quantity
+  ]
 end
 
 to initialize-stash
   set stash table:make
+  
+  set product-selection-strategy-table table:make
+  table:put product-selection-strategy-table 1 task select-max-ratio-product
+  table:put product-selection-strategy-table 2 task select-easiest-to-produce-product
+  table:put product-selection-strategy-table 3 task select-most-abundant-product
 end
 
 to-report produce-product [product-id]
   let upt get-template-units_per_tick product-id
   let dif get-difficulty product-id
-  report upt * dif
+  show (word "Producing product [" product-id "@" get-template-name product-id "] units-per-tick [" upt "] difficulty [" dif "] upt * dif [" round ( upt * dif ) "]")
+  report round ( upt * dif )
 end
 
 to stash-product [product-id add-quantity]
@@ -29,6 +46,7 @@ to stash-product [product-id add-quantity]
   if table:has-key? stash product-id [
     set current-quantity table:get stash product-id
   ]
+  show (word "Stashing product [" product-id "@" get-template-name product-id "] quantity [" ( current-quantity + add-quantity ) "]")
   table:put stash product-id ( current-quantity + add-quantity )
 end
 
@@ -44,3 +62,42 @@ to-report get-difficulty [product-id]
   report table:get product-difficulty-table product-id
 end
 
+;; Product Selection Strategies
+
+to-report select-product
+  let selected-product-id -1
+  ifelse table:has-key? product-selection-strategy-table product-selection-strategy [
+    let product-selection-strategy-task table:get product-selection-strategy-table product-selection-strategy
+    ask runresult product-selection-strategy-task [
+      set selected-product-id template-product-id
+    ]
+    show (word "Selected product [" selected-product-id "@" get-template-name selected-product-id "]")
+  ] [
+    show "No product-selection-strategy set."
+  ]
+  report selected-product-id
+end
+
+to-report select-max-ratio-product
+  let table product-difficulty-table
+  let best-product max-n-of 1 products [
+    ( table:get table template-product-id ) * units-per-tick
+  ]
+  report best-product
+end
+
+to-report select-easiest-to-produce-product
+  let table product-difficulty-table
+  let best-product max-n-of 1 products [
+    table:get table template-product-id
+  ]
+  report best-product
+end
+
+to-report select-most-abundant-product
+  let table product-difficulty-table
+  let best-product max-n-of 1 products [
+    units-per-tick
+  ]
+  report best-product
+end
