@@ -10,4 +10,27 @@ markets-own [
 ]
 
 to market-run
+  if ticks mod market-day-tick = 0 
+  [
+    market-day
+  ]
+end
+
+
+to market-day ;; CHECK
+ let rfqs []
+ ask products[
+   set rfqs lput (list create_rfq self) rfqs
+ ]
+ 
+ ask producers in-radius influence-radius[ 
+   foreach rfqs [
+     ;; TODO send_rfq self "RFQ" ?
+   ]
+ ]
+
+end
+
+to-report create_rfq [such_product_id]
+  report nobody ;; TODO
 end

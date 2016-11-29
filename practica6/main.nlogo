@@ -1,6 +1,6 @@
 extensions[csv array table]
 
-__includes["world.nls" "template_product.nls" "market.nls" "product.nls" "producer.nls" "unitests.nls"]
+__includes["world.nls" "template_product.nls" "market.nls" "product.nls" "producer.nls" "mediator.nls" "unitests.nls"]
 
 to setup
   ifelse length world-csv-file > 0 [

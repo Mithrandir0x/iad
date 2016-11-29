@@ -1,0 +1,27 @@
+
+
+to send_message [recipient kind message]
+
+  ask recipient [
+    set next-messages lput (list myself kind message) next-messages
+  ]
+end
+
+
+to swap_messages
+  ;;ask cars [
+  ;;  set current-messages next-messages
+  ;;  set next-messages []
+  ;;]
+end
+
+
+to process_messages
+ ;; ask cars [
+ ;;   foreach current-messages [
+ ;;     process_message (item 0 ?) (item 1 ?) (item 2 ?) ;; Cada mensaje es una lista [emisor tipo mensaje]
+ ;;   ]
+ ;; ]
+end
+
+;; --------------------------------------- /HELPERS
