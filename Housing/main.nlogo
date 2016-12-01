@@ -44,12 +44,42 @@ HOUSING (a general understanding of what the model is trying to show or explain)
 ### Humanos
 
 * Tienen una vida entre 500 y 1000 ticks
+
 * Cada 10 ticks reciben sueldo (el SMI)
+
 * Pueden tener entre 0 y 3 hijos
+
 * Caminan de forma aleatoria hasta que compran una casa
-* Un slider que defina el numero maximo de casas que puede tener un human ( 2 por defecto )
+
+* Un slider que defina el numero maximo de casas que puede tener un human (2 por defecto)
+
+* Un humano solo puede vivir en una casa al mismo tiempo, si posee mas estas no estaran ocupadas
+
+* un humano pierde dinero cada 10 ticks entre 0 y 10% del dinero.
+
+* un humano pierde dinero cada 100 ticks entre 0 y 20% del dinero
+
+* un humano pierde dinero cada 300 ticks entre 0 y 90% del dinero si tiene dinero por debajo de la media, entre 0 y 30% si tiene dinero por encima de la media
+
+* un humano puede construir una casa siempre que cumpla la norma del slider y pueda permitirse pagar 50 veces el SMI, pero pagará 25 veces el SMI para construirla.
+
 
 ### Casas
+
+* Una casa tiene un coste base de 20 veces el SMI ( este coste es base, se fija la primera vez y no se toca) y variables ( se actualizan al iniciar la negociacion ) :
+
+    * \+ 50%/d donde de es la odistancia de casa respecto al centro
+
+    * \+ 0.2% que se lleva el vendedor
+
+    * \-15% si tiene menos de 3 casas vecinas,
+
+    * \+ 5% por cada casa vecina que este ocupada ocupadas, a partir de 3 casas vecinas
+
+* El coste base de una casa se actualiza cada vez que 3 generaciones, o inquilinos hayan pasado por una casa.¿?¿?
+
+
+* Una casa puede estar vacia, u ocupada si el dueño vive en ella
 
 
 ## THINGS TO TRY
