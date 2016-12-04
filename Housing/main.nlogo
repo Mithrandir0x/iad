@@ -1,8 +1,102 @@
+breed[ councils council ]
+patches-own[ free ]
+
+globals[
+  EARN-EACH
+  LOSE-EACH
+  BAD-LUCK-EACH
+  GOOD-LUCK-EACH
+]
+
+__includes[
+  "human.nls"
+  "house.nls"
+  ]
+
+
+
+to setup
+  clear-all
+
+  set EARN-EACH 10
+  set LOSE-EACH 10
+  set BAD-LUCK-EACH 100
+  set GOOD-LUCK-EACH 20
+
+  ;; initialize all patches to be free for edification
+  ask patches [
+    set free true
+    set pcolor grey
+  ]
+
+  create-councils INIT-CITY-COUNCILS[
+    set shape "pentagon"
+    set color white
+    setxy 0 0
+    ask patch-here [ set free false ]
+  ]
+
+  create-houses INIT-HOUSES [
+
+    setxy [pxcor] of one-of patches [pycor] of one-of patches
+    ask patch-here [ set free false ]
+    initialize_house one-of councils
+  ]
+
+  create-humans INIT-HUMANS [
+    initialize_human
+  ]
+
+  reset-ticks
+
+end
+
+to go
+  ask humans [ behave ]
+  ask humans with [ money < (max[money] of humans * 0.8) and money > 0 ]  [bad_luck]
+  ask one-of humans [good_luck]
+
+  construction
+  kill
+  tick
+end
+
+to construction
+  let able nobody
+  let coords nobody
+  set able one-of humans with [can-build] with-max [ money ]
+
+  if able != nobody
+  [
+    set coords one-of patches with [free] with-min [ distance one-of councils]
+    if coords != nobody
+    [
+      show ( word "we can build on " coords)
+      ask coords[ set free false ]
+
+      create-houses 1[
+        initialize_house one-of councils
+        setxy [pxcor] of coords [pycor] of coords
+        set_empty false
+        ask able [ set money money - [base-price] of myself ]
+      ]
+
+      ask able[ set can-build false]
+    ]
+  ]
+end
+
+to kill
+  ask humans with [life < 0][
+    ask houses with [owner =  myself][set_empty true]
+    die
+  ]
+end
 @#$#@#$#@
 GRAPHICS-WINDOW
-210
+16
 10
-649
+455
 470
 16
 16
@@ -20,11 +114,140 @@ GRAPHICS-WINDOW
 16
 -16
 16
-0
-0
+1
+1
 1
 ticks
 30.0
+
+BUTTON
+628
+13
+706
+46
+SETUP
+setup
+NIL
+1
+T
+OBSERVER
+NIL
+S
+NIL
+NIL
+1
+
+SLIDER
+630
+72
+904
+105
+SMI
+SMI
+1
+1000
+40
+1
+1
+€
+HORIZONTAL
+
+SLIDER
+629
+116
+801
+149
+INIT-HUMANS
+INIT-HUMANS
+1
+50
+50
+1
+1
+NIL
+HORIZONTAL
+
+SLIDER
+628
+161
+800
+194
+INIT-HOUSES
+INIT-HOUSES
+0
+50
+10
+1
+1
+NIL
+HORIZONTAL
+
+SLIDER
+628
+210
+800
+243
+INIT-CITY-COUNCILS
+INIT-CITY-COUNCILS
+1
+1
+1
+1
+1
+NIL
+HORIZONTAL
+
+BUTTON
+724
+13
+787
+46
+GO
+go
+T
+1
+T
+OBSERVER
+NIL
+G
+NIL
+NIL
+1
+
+PLOT
+15
+479
+456
+704
+Savings
+NIL
+NIL
+0.0
+10.0
+0.0
+10.0
+true
+true
+"plot 0" ""
+PENS
+"max" 1.0 0 -2674135 true "" "plot max [ money ] of humans"
+"mean" 1.0 0 -955883 true "" "plot mean [ money ] of humans"
+"median" 1.0 0 -13840069 true "" "plot median [ money ] of humans"
+
+SLIDER
+627
+258
+853
+291
+MAX-HOUSES-IN-PROPERTY
+MAX-HOUSES-IN-PROPERTY
+1
+5
+1
+1
+1
+NIL
+HORIZONTAL
 
 @#$#@#$#@
 ## WHAT IS IT?
@@ -43,13 +266,13 @@ HOUSING (a general understanding of what the model is trying to show or explain)
 
 ### Humanos
 
+* Se genera un humano cada 10 ticks
+
 * Tienen una vida entre 500 y 1000 ticks
 
 * Cada 10 ticks reciben sueldo (el SMI)
 
-* Pueden tener entre 0 y 3 hijos
-
-* Caminan de forma aleatoria hasta que compran una casa
+* Caminan de forma aleatoria, intentando comprar casas o construyendolas
 
 * Un slider que defina el numero maximo de casas que puede tener un human (2 por defecto)
 
@@ -68,7 +291,7 @@ HOUSING (a general understanding of what the model is trying to show or explain)
 
 * Una casa tiene un coste base de 20 veces el SMI ( este coste es base, se fija la primera vez y no se toca) y variables ( se actualizan al iniciar la negociacion ) :
 
-    * \+ 50%/d donde de es la odistancia de casa respecto al centro
+    * \+ 50%/d donde de es la distancia de casa respecto al centro
 
     * \+ 0.2% que se lleva el vendedor
 
@@ -80,6 +303,12 @@ HOUSING (a general understanding of what the model is trying to show or explain)
 
 
 * Una casa puede estar vacia, u ocupada si el dueño vive en ella
+
+
+### Ofertas
+
+* Un humano puede hacer una oferta al dueño de una casa
+
 
 
 ## THINGS TO TRY

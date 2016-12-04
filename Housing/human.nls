@@ -1,0 +1,113 @@
+breed[ humans human ]
+
+humans-own[
+  life
+  money
+  num-houses
+  can-build
+  ]
+
+
+to initialize_human
+  set shape "face sad"
+  set color red
+  setxy random-xcor random-ycor
+  set can-build false
+  set money SMI * random 100 
+  set life (random 500) + 500
+end
+
+to behave
+  if MAX-HOUSES-IN-PROPERTY > num-houses [
+    buy_houses
+    build_houses
+  ]
+  
+  update_shape
+  earn
+  lose
+  update_color
+  set life life - 1
+  walk
+end
+
+to walk
+  if money > 0
+  [
+    set money money - 1
+    fd 1
+    ;; rotates?
+    if random 1 = 1
+    [ ;; where?
+      ifelse random 1 = 1
+      [ right 90 ]
+      [ left 90 ]
+    ]
+  ]
+end
+
+to earn
+  if ticks mod EARN-EACH = 0
+  [
+    set money money + SMI
+  ]
+end
+
+to lose
+  if ticks mod LOSE-EACH = 0
+  [
+    set money money - (SMI * 0.1 * (5 + random 5))
+  ]
+end
+
+to bad_luck
+  if ticks mod BAD-LUCK-EACH = 0
+  [
+    ifelse money > median [money] of humans
+    [set money money - (money * 0.01 * random 10)]
+    [set money money - (money * 0.01 * random 80)]
+  ]
+end
+
+to good_luck
+  if ticks mod GOOD-LUCK-EACH = 0
+  [
+    ifelse money > median [money] of humans
+    [set money money + (SMI *  (10 + random 10))]
+    [set money money + (SMI *  random 10)]
+  ]
+end
+
+to update_color
+  ifelse num-houses > 0 [ set color orange][ set color white]
+  ;;set color scale-color green money (max [money] of humans) (min [money] of humans)
+end
+
+to update_shape
+  ifelse num-houses = 0
+  [ set shape "face sad"]
+  [ set shape "face happy"]
+end
+
+to buy_houses
+  let affordable nobody
+  set affordable affordable_houses
+  if affordable != nobody
+  [
+    show (word who " buys " affordable " for " [base-price] of affordable " €")
+    ask affordable[
+      set owner myself
+      set color green
+    ]
+    set money money - [base-price] of affordable
+    set num-houses num-houses +  1
+  ]
+end
+
+to build_houses
+  if money > SMI * 75[ set can-build true]
+end
+
+to-report affordable_houses
+  report one-of houses in-radius 5 with [owner = nobody and base-price < [money] of myself]
+end

@@ -1,0 +1,31 @@
+breed[ houses house ]
+
+houses-own[
+  base-price
+  owner
+  empty
+  city-council
+]
+
+
+to initialize_house [ council ]
+  set shape "house"
+  set color red
+  set owner nobody
+  set empty true
+  set city-council council
+  set base-price calc_base_price
+  ask patch-here [ set free false]
+end
+
+
+to set_empty[ value ]
+ set empty value
+ ifelse empty [ set color red][set color green]
+end
+
+to-report calc_base_price
+  let pr 15 * SMI 
+  ;; base price  + a variable % based on distance to city-council less distance is better
+  report pr + (100 / (1 + distance city-council))
+end
