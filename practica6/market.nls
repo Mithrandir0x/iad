@@ -4,33 +4,57 @@ breed [ markets market ]
 markets-own [
   influence-radius
   market-day-tick
+  transactions
   
   current-messages
   next-messages
 ]
 
 to market-run
-  if ticks mod market-day-tick = 0 
-  [
-    market-day
+  if ticks mod market-day-tick = 0  
+  [ 
+    create_and_send_rfqs
+  ]
+  
+end
+
+
+to-report get_product_units_per_tick [tp-id]
+ ;; even though there will only be one product with that id, we use of one-of to 
+ ;; to return just one 
+ report [units-per-tick] of one-of products with [ template-product-id = tp-id]
+end
+
+to create_and_send_rfqs
+  send_rfqs create_rfqs
+end
+
+
+to-report create_rfqs
+  let rfqs-list []
+  ask products[
+    set rfqs-list lput create_rfq rfqs-list
+  ]
+  report rfqs-list
+end
+
+to send_rfqs [ rfqs ]
+  ask producers in-radius influence-radius[
+    foreach rfqs[
+      send_rfq self ?1
+    ]
+    
   ]
 end
 
-
-to market-day ;; CHECK
- let rfqs []
- ask products[
-   set rfqs lput (list create_rfq self) rfqs
- ]
- 
- ask producers in-radius influence-radius[ 
-   foreach rfqs [
-     ;; TODO send_rfq self "RFQ" ?
-   ]
- ]
-
+to send_rfq [ recipient message ]
+  send_message recipient myself "RFQ" message
 end
 
-to-report create_rfq [such_product_id]
-  report nobody ;; TODO
+
+to-report create_rfq
+  ;; rfq : product quantity
+  report (list template-product-id (units-per-tick * [market-day-tick] of myself))  
 end
+
+
