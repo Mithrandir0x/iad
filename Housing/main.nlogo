@@ -6,18 +6,39 @@ globals[
   LOSE-EACH
   BAD-LUCK-EACH
   GOOD-LUCK-EACH
+  LIFE-TO-PROCREATE
+
+  ;; MONITORS
+  MONITOR-MAX-SAVINGS
+  MONITOR-MEAN-SAVINGS
+  MONITOR-MEDIAN-SAVINGS
+
+  MONITOR-HOMELESS
+  MONITOR-ONE-HOUSE
+  MONITOR-TWO-HOUSES
+  MONITOR-MORE-HOUSES
+
+  MONITOR-EMPTY-HOUSES
+  MONITOR-FREE-HOUSES
+  MONITOR-NOT-EMPTY-HOUSES
+
+  MONITOR-HOUSES-BUILT
+  MONITOR-HOUSES-BOUGHT
+
+
 ]
 
 __includes[
   "human.nls"
   "house.nls"
+  "plots-and-monitors.nls"
   ]
 
 
 
 to setup
   clear-all
-
+  set LIFE-TO-PROCREATE 450
   set EARN-EACH 10
   set LOSE-EACH 10
   set BAD-LUCK-EACH 100
@@ -31,16 +52,14 @@ to setup
 
   create-councils INIT-CITY-COUNCILS[
     set shape "pentagon"
-    set color white
+    set color black
     setxy 0 0
     ask patch-here [ set free false ]
   ]
 
   create-houses INIT-HOUSES [
-
-    setxy [pxcor] of one-of patches [pycor] of one-of patches
     ask patch-here [ set free false ]
-    initialize_house one-of councils
+    initialize_house one-of councils one-of patches with [free]
   ]
 
   create-humans INIT-HUMANS [
@@ -48,47 +67,128 @@ to setup
   ]
 
   reset-ticks
-
+  setup_monitors
+  update_monitors
 end
 
 to go
-  ask humans [ behave ]
-  ask humans with [ money < (max[money] of humans * 0.8) and money > 0 ]  [bad_luck]
-  ask one-of humans [good_luck]
+  if ticks mod EARN-EACH = 0 [ humans_earn ]
+  ;;if ticks mod LOSE-EACH = 0 [ humans_lose ]
 
-  construction
-  kill
+  ask houses [ house_behave ]
+  ask humans [ human_behave ]
+
+
+
+  if ticks mod BAD-LUCK-EACH = 0 [ humans_bad_luck ]
+
+
+  if ticks mod GOOD-LUCK-EACH = 0 [ humans_good_luck ]
+
+  if (count humans with [ life = LIFE-TO-PROCREATE ]) > 0  [ humans_procreate ]
+  if (count humans with [ can-build ]) > 0 [ humans_build ]
+
+
+
+  kill_humans
+  update_monitors
   tick
 end
 
-to construction
-  let able nobody
-  let coords nobody
-  set able one-of humans with [can-build] with-max [ money ]
 
-  if able != nobody
+to humans_earn
+  ask humans [
+    set money money + SMI * social-status
+  ]
+end
+
+to humans_lose
+  ask humans [
+    set money money - (SMI * 0.1 * (5 + random 5))
+  ]
+end
+
+to humans_bad_luck
+  ;; bad loock for some of them
+  ask humans with [ money < (max[money] of humans * 0.8) and money > 0 ]
   [
-    set coords one-of patches with [free] with-min [ distance one-of councils]
+    ifelse money > median [money] of humans
+    [set money money - (money * 0.01 * random 10)]
+    [set money money - (money * 0.01 * random 80)]
+  ]
+end
+
+to humans_good_luck
+  ;; one luck just for one
+  ask one-of humans
+  [
+    ifelse money > median [money] of humans
+    [set money money + (SMI *  (10 + random 10))]
+    [set money money + (SMI *  random 10)]
+  ]
+end
+
+
+to humans_build
+  ;;let humans-able sort-on [money] humans with [can-build and num-houses < MAX-HOUSES-IN-PROPERTY]
+  let human-able nobody
+  set human-able one-of humans with [can-build and num-houses < MAX-HOUSES-IN-PROPERTY]
+  if human-able != nobody
+  [
+  ;;foreach humans-able[
+    ;;let human-able ?
+
+    let coords nobody
+
+    set coords one-of patches with [free] with-min [ distance one-of councils ]
+
     if coords != nobody
     [
-      show ( word "we can build on " coords)
+      set MONITOR-HOUSES-BUILT MONITOR-HOUSES-BUILT + 1
+
       ask coords[ set free false ]
 
       create-houses 1[
-        initialize_house one-of councils
-        setxy [pxcor] of coords [pycor] of coords
-        set_empty false
-        ask able [ set money money - [base-price] of myself ]
+        initialize_house_of one-of councils coords human-able
+        if [ num-houses = 0 ] of human-able[ ;; house with owner and not empty
+          set empty false
+        ]
+
+        ask human-able [ set money money - [base-price] of myself ]
+        show ( word human-able " builds a house at " coords " for " base-price)
       ]
 
-      ask able[ set can-build false]
+      ask human-able[
+        set can-build false
+        set num-houses num-houses + 1
+      ]
     ]
   ]
 end
 
-to kill
+to humans_procreate
+  let able-to-procreate sort-on [money] humans with [ life = LIFE-TO-PROCREATE ]
+  foreach able-to-procreate[
+    if HOMELES-CAN-PROCREATE or [num-houses > 0] of ?
+    [
+      create-humans random 3[
+        initialize_son ?
+      ]
+      ;; father loses 25% of money
+      ask ? [ set money 0.75 * money]
+    ]
+  ]
+end
+
+
+
+to kill_humans
   ask humans with [life < 0][
-    ask houses with [owner =  myself][set_empty true]
+    ask houses with [owner =  myself][
+      set empty true
+      set owner nobody
+      set color orange
+      ]
     die
   ]
 end
@@ -140,13 +240,13 @@ NIL
 SLIDER
 630
 72
-904
+1144
 105
 SMI
 SMI
 1
-1000
-40
+1500
+602
 1
 1
 €
@@ -154,9 +254,9 @@ HORIZONTAL
 
 SLIDER
 629
-116
+152
 801
-149
+185
 INIT-HUMANS
 INIT-HUMANS
 1
@@ -169,14 +269,14 @@ HORIZONTAL
 
 SLIDER
 628
-161
+197
 800
-194
+230
 INIT-HOUSES
 INIT-HOUSES
 0
 50
-10
+0
 1
 1
 NIL
@@ -184,9 +284,9 @@ HORIZONTAL
 
 SLIDER
 628
-210
+246
 800
-243
+279
 INIT-CITY-COUNCILS
 INIT-CITY-COUNCILS
 1
@@ -230,24 +330,310 @@ true
 true
 "plot 0" ""
 PENS
-"max" 1.0 0 -2674135 true "" "plot max [ money ] of humans"
-"mean" 1.0 0 -955883 true "" "plot mean [ money ] of humans"
-"median" 1.0 0 -13840069 true "" "plot median [ money ] of humans"
+"max" 1.0 0 -2674135 true "" "plot MONITOR-MAX-SAVINGS"
+"mean" 1.0 0 -955883 true "" "plot MONITOR-MEAN-SAVINGS"
+"median" 1.0 0 -13840069 true "" "plot MONITOR-MEDIAN-SAVINGS"
 
 SLIDER
 627
-258
+294
 853
-291
+327
 MAX-HOUSES-IN-PROPERTY
 MAX-HOUSES-IN-PROPERTY
 1
 5
-1
+3
 1
 1
 NIL
 HORIZONTAL
+
+PLOT
+18
+723
+457
+929
+Home posession
+NIL
+NIL
+0.0
+10.0
+0.0
+10.0
+true
+true
+"" ""
+PENS
+"Homeless" 1.0 0 -1184463 true "" "plot MONITOR-HOMELESS"
+"1 House" 1.0 0 -13345367 true "" "plot MONITOR-ONE-HOUSE"
+"2 Houses" 1.0 0 -5825686 true "" "plot MONITOR-TWO-HOUSES"
+"+ Houses" 1.0 0 -16777216 true "" "plot MONITOR-MORE-HOUSES"
+
+PLOT
+556
+479
+1036
+707
+Houses
+NIL
+NIL
+0.0
+10.0
+0.0
+10.0
+true
+true
+"" ""
+PENS
+"empty" 1.0 0 -2674135 true "" "plot MONITOR-EMPTY-HOUSES"
+"free" 1.0 0 -955883 true "" "plot MONITOR-FREE-HOUSES"
+"not empty" 1.0 0 -13840069 true "" "plot MONITOR-NOT-EMPTY-HOUSES"
+
+PLOT
+554
+724
+1029
+912
+Population
+NIL
+NIL
+0.0
+10.0
+0.0
+10.0
+true
+true
+"" ""
+PENS
+"elders" 1.0 0 -955883 true "" "plot count humans with [ life < 300 ]"
+"adult" 1.0 0 -13840069 true "" "plot count humans with [ life >= 300 and life < 750 ]"
+"young" 1.0 0 -7500403 true "" "plot count humans with [ life >= 750 ]"
+
+SWITCH
+628
+346
+872
+379
+HOMELES-CAN-PROCREATE
+HOMELES-CAN-PROCREATE
+0
+1
+-1000
+
+SLIDER
+628
+394
+800
+427
+SOCIAL-STATUSES
+SOCIAL-STATUSES
+2
+5
+2
+1
+1
+NIL
+HORIZONTAL
+
+SLIDER
+807
+151
+1143
+184
+HOUSE-BASE-VALUE
+HOUSE-BASE-VALUE
+1
+100
+10
+1
+1
+smis
+HORIZONTAL
+
+MONITOR
+463
+479
+540
+524
+max
+MONITOR-MAX-SAVINGS
+0
+1
+11
+
+MONITOR
+463
+529
+540
+574
+mean
+MONITOR-MEAN-SAVINGS
+0
+1
+11
+
+MONITOR
+463
+579
+539
+624
+median
+MONITOR-MEDIAN-SAVINGS
+0
+1
+11
+
+SLIDER
+806
+196
+1143
+229
+HOUSE-CONSTRUCTION-REQUIRED-SMI
+HOUSE-CONSTRUCTION-REQUIRED-SMI
+1
+100
+11
+1
+1
+smis
+HORIZONTAL
+
+MONITOR
+460
+722
+538
+767
+homeless
+MONITOR-HOMELESs
+0
+1
+11
+
+MONITOR
+461
+771
+537
+816
+1 house
+MONITOR-ONE-HOUSE
+0
+1
+11
+
+MONITOR
+462
+819
+536
+864
+2 houses
+MONITOR-TWO-HOUSES
+0
+1
+11
+
+MONITOR
+462
+869
+539
+914
++ houses
+MONITOR-MORE-HOUSES
+0
+1
+11
+
+MONITOR
+1041
+479
+1120
+524
+empty
+MONITOR-EMPTY-HOUSES
+17
+1
+11
+
+MONITOR
+1041
+531
+1120
+576
+free
+MONITOR-FREE-HOUSES
+0
+1
+11
+
+MONITOR
+1042
+583
+1121
+628
+not empty
+MONITOR-NOT-EMPTY-HOUSES
+17
+1
+11
+
+MONITOR
+461
+10
+529
+55
+houses
+count houses
+0
+1
+11
+
+MONITOR
+462
+64
+528
+109
+humans
+count humans
+0
+1
+11
+
+SLIDER
+631
+112
+1143
+145
+IPC
+IPC
+1
+100
+7
+1
+1
+%
+HORIZONTAL
+
+MONITOR
+463
+151
+520
+196
+built
+MONITOR-HOUSES-BUILT
+0
+1
+11
+
+MONITOR
+464
+204
+522
+249
+bought
+MONITOR-HOUSES-BOUGHT
+0
+1
+11
 
 @#$#@#$#@
 ## WHAT IS IT?
@@ -655,5 +1041,5 @@ Line -7500403 true 150 150 90 180
 Line -7500403 true 150 150 210 180
 
 @#$#@#$#@
-0
+1
 @#$#@#$#@

@@ -1,0 +1,23 @@
+
+to setup_monitors
+ set MONITOR-HOUSES-BUILT 0
+ set MONITOR-HOUSES-BOUGHT 0
+end
+
+to update_monitors
+  
+  set MONITOR-MAX-SAVINGS max [money] of humans
+  set MONITOR-MEAN-SAVINGS mean [money] of humans
+  set MONITOR-MEDIAN-SAVINGS median [money] of humans
+  
+  set MONITOR-HOMELESS count humans with [ num-houses = 0 ]
+  set MONITOR-ONE-HOUSE count humans with [ num-houses = 1 ]
+  set MONITOR-TWO-HOUSES count humans with [ num-houses = 2 ]
+  set MONITOR-MORE-HOUSES count humans with [ num-houses > 2 ]
+  
+  set MONITOR-EMPTY-HOUSES count houses with [ empty and owner != nobody] ;; houses with owner but noone living in
+  set MONITOR-FREE-HOUSES count houses with [ owner = nobody] ;; houses without owner
+  set MONITOR-NOT-EMPTY-HOUSES count houses with [ not empty ] ;; houses with people living there
+end
+
+
