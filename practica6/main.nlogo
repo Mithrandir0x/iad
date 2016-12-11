@@ -7,29 +7,30 @@ __includes[
   "product.nls"
   "producer.nls"
   "unitests.nls"
-  ]
+]
+
+;; global execution context functions
 
 to setup
   ifelse length world-csv-file > 0 [
-  load-world-file
+    load_world_file
   ] [
-  show "variable [world-csv-file] cannot be empty."
+    show "variable [world-csv-file] cannot be empty."
   ]
-  reset-ticks
 end
 
 
 to go
   swap_messages
-  ask markets [ market-run ]
+  ask markets [ market_run ]
 
-  ask producers [ producer-run ]
+  ask producers [ producer_run ]
 
   kill_agents_without_energy
   tick
 end
 
-
+;; actor message processing functions
 
 to swap_messages
   ask markets [
@@ -45,19 +46,76 @@ end
 
 
 
-to send_message [recipient sender kind message]
+to send_message [ recipient sender kind message ]
   ask recipient [
     ;; sender, kind, message
-    print (word recipient " recieves " kind " message witch content " message " from " sender )
+    print (word recipient " recieves [" kind "] message witch content [" message "] from [" sender "]" )
     set next-messages lput (list sender kind message) next-messages
 
   ]
 end
 
+to-report message_get_sender [ msg ]
+  report item 0 msg
+end
+
+to-report message_get_kind [ msg ]
+  report item 1 msg
+end
+
+to-report message_get_content [ msg ]
+  report item 2 msg
+end
+
+to-report extract_messages_of_kind [ kind ]
+  let messages []
+  let other-messages []
+  foreach current-messages [
+    ifelse message_get_kind ? = kind [
+      set messages lput ? messages
+    ] [
+      set other-messages lput ? other-messages
+    ]
+  ]
+  set current-messages other-messages
+  report messages
+end
+
+;; agent related functions
+
 to kill_agents_without_energy
-  ask producers with [ energy < 0 ]
-  [
+  ask producers with [ energy < 0 ] [
+    show "Dying"
     die
+  ]
+end
+
+
+;; stash related functions
+
+to initialize_stash
+  set stash table:make
+end
+
+to stash_product [product-id add-quantity]
+  let current-quantity 0
+  if table:has-key? stash product-id [
+    set current-quantity table:get stash product-id
+  ]
+  show (word "Stashing product [" product-id "]:[" get_template_name product-id "] current-quantity [" current-quantity "] add-quantity [" add-quantity "]")
+  table:put stash product-id ( current-quantity + add-quantity )
+end
+
+to consume_stashed_product [ product-id remove-quantity ]
+  ifelse table:has-key? stash product-id [
+    let current-quantity table:get stash product-id
+    ifelse current-quantity - remove-quantity >= 0 [
+      table:put stash product-id ( current-quantity - remove-quantity )
+    ] [
+      show ( word "Not enough units of product [" get_template_name product-id "]" )
+    ]
+  ] [
+    show ( word "Product [" get_template_name product-id "] not available in stash." )
   ]
 end
 @#$#@#$#@
@@ -105,7 +163,7 @@ BUTTON
 586
 73
 Save To
-save-world-file
+save_world_file
 NIL
 1
 T
@@ -122,7 +180,7 @@ BUTTON
 586
 113
 Load From
-ifelse length world-csv-file > 0 [\n  load-world-file\n] [\n  show \"variable [world-csv-file] cannot be empty.\"\n]
+ifelse length world-csv-file > 0 [\n  load_world_file\n] [\n  show \"variable [world-csv-file] cannot be empty.\"\n]
 NIL
 1
 T
@@ -139,7 +197,7 @@ BUTTON
 1057
 93
 Clear
-clear-world-file
+clear_world_file
 NIL
 1
 T
@@ -164,7 +222,7 @@ NIL
 10.0
 true
 true
-"ask products[\n  create-temporary-plot-pen get-template-name template-product-id\n  set-plot-pen-color color ; set the pen to the color of the party\n]" "ask products [\n  set-current-plot-pen get-template-name template-product-id\n  plot sum [ get-product-quantity [template-product-id] of myself ] of producers\n]"
+"ask products [\n  create-temporary-plot-pen get_template_name template-product-id\n  set-plot-pen-color color ; set the pen to the color of the party\n]" "ask products [\n  set-current-plot-pen get_template_name template-product-id\n  plot sum [ get_product_quantity [ template-product-id ] of myself ] of producers\n]"
 PENS
 
 BUTTON

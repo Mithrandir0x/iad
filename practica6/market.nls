@@ -6,55 +6,80 @@ markets-own [
   market-day-tick
   transactions
   
+  proposed-rfqs
+  stash
+  
   current-messages
   next-messages
 ]
 
-to market-run
-  if ticks mod market-day-tick = 0  
-  [ 
-    create_and_send_rfqs
+to market_run
+  ifelse not empty? current-messages [
+    process_offers
+  ] [
+    if ticks mod market-day-tick = 0 [ 
+      create_and_send_rfqs
+    ]
   ]
-  
 end
 
+to process_offers
+  let offer-messages extract_messages_of_kind "OFFER"
+  if length offer-messages > 0 [
+    let tp-ids table:keys proposed-rfqs
+    foreach tp-ids [
+      let offers-for-tp-id filter [ offer_get_template_product_id ( message_get_content ? ) = tp-ids ] offer-messages
+      let offer-message first sort-by [ ( offer_get_value ? ) * ( offer_get_quantity ? ) ] offers-for-tp-id
+      if offer-message != nobody [
+        let offer-producer message_get_sender offer-message
+        let content message_get_content offer-message
+        ask offer-producer [
+          consume_stashed_product ( offer_get_template_product_id content ) ( offer_get_quantity content )
+        ]
+        stash_product ( offer_get_template_product_id content ) ( offer_get_quantity content )
+      ]
+    ]
+  ]
+end
 
 to-report get_product_units_per_tick [tp-id]
  ;; even though there will only be one product with that id, we use of one-of to 
  ;; to return just one 
- report [units-per-tick] of one-of products with [ template-product-id = tp-id]
+ report [ units-per-tick ] of one-of products with [ template-product-id = tp-id ]
 end
 
 to create_and_send_rfqs
   send_rfqs create_rfqs
 end
 
-
 to-report create_rfqs
   let rfqs-list []
-  ask products[
-    set rfqs-list lput create_rfq rfqs-list
+  let target-market self
+  ask products [
+    set rfqs-list lput ( create_rfq target-market ) rfqs-list
   ]
+  set proposed-rfqs table:from-list rfqs-list
   report rfqs-list
 end
 
 to send_rfqs [ rfqs ]
-  ask producers in-radius influence-radius[
-    foreach rfqs[
+  ask producers in-radius influence-radius [
+    foreach rfqs [
       send_rfq self ?1
     ]
-    
   ]
 end
 
-to send_rfq [ recipient message ]
-  send_message recipient myself "RFQ" message
+to send_rfq [ producer-agent rfq ]
+  send_message producer-agent myself "RFQ" rfq
 end
 
 
-to-report create_rfq
+to-report create_rfq [ target-market ]
   ;; rfq : product quantity
-  report (list template-product-id (units-per-tick * [market-day-tick] of myself))  
+  report ( list template-product-id ( units-per-tick * [market-day-tick] of myself ) )
 end
 
-
+to-report rfq_get_template_product_id [ rfq-product-list ]
+  report item 0 rfq-product-list
+end

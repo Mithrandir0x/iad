@@ -5,9 +5,10 @@ producers-own [
   id
   product-difficulty-table
   product-in-process
-  stash
   product-selection-strategy
   energy
+  
+  stash
 
   current-messages
   next-messages
@@ -17,55 +18,50 @@ globals [
   PRODUCT-SELECTION-STRATEGY-TABLE
 ]
 
-to Initialize-product-selection-strategy-table
+to Initialize_product_selection_strategy_table
   set PRODUCT-SELECTION-STRATEGY-TABLE table:make
-  table:put PRODUCT-SELECTION-STRATEGY-TABLE 1 task select-max-ratio-product
-  table:put PRODUCT-SELECTION-STRATEGY-TABLE 2 task select-easiest-to-produce-product
-  table:put PRODUCT-SELECTION-STRATEGY-TABLE 3 task select-most-abundant-product
+  table:put PRODUCT-SELECTION-STRATEGY-TABLE 1 task select_max_ratio_product
+  table:put PRODUCT-SELECTION-STRATEGY-TABLE 2 task select_easiest_to_produce_product
+  table:put PRODUCT-SELECTION-STRATEGY-TABLE 3 task select_most_abundant_product
 end
 
-to producer-run
+to producer_run
   ifelse not empty? current-messages
   [
     process_rfqs
   ]
   [
-    producer-produce-product
+    producer_produce_product
   ]
-  set energy energy - 1  
+  set energy energy - 1
 end
 
-to producer-produce-product
-  let selected-product-id select-product
+to force_product_production [ tp-id ]
+  if tp-id != -1 [
+    set product-in-process tp-id
+    ;;let quantity produce-product selected-product-id
+    stash_product tp-id ( produce_product tp-id )
+  ]
+end
+
+to producer_produce_product
+  let selected-product-id select_product
 
   if selected-product-id != -1 [
     set product-in-process selected-product-id
     ;;let quantity produce-product selected-product-id
-    stash-product selected-product-id produce-product selected-product-id
+    stash_product selected-product-id ( produce_product selected-product-id )
   ]
 end
 
-to initialize-producer
-  set stash table:make
-end
-
-to-report produce-product [product-id]
-  let upt get-template-units_per_tick product-id
-  let dif get-difficulty product-id
-  show (word "Producing product [" product-id "]:[" get-template-name product-id "] units-per-tick [" upt "] difficulty [" dif "] upt * dif [" round ( upt * dif ) "]")
+to-report produce_product [product-id]
+  let upt get_template_units_per_tick product-id
+  let dif get_difficulty product-id
+  show (word "Producing product [" product-id "]:[" get_template_name product-id "] units-per-tick [" upt "] difficulty [" dif "] upt * dif [" round ( upt * dif ) "]")
   report round ( upt * dif )
 end
 
-to stash-product [product-id add-quantity]
-  let current-quantity 0
-  if table:has-key? stash product-id [
-    set current-quantity table:get stash product-id
-  ]
-  show (word "Stashing product [" product-id "]:[" get-template-name product-id "] current-quantity [" current-quantity "] add-quantity [" add-quantity "]")
-  table:put stash product-id ( current-quantity + add-quantity )
-end
-
-to-report get-difficulty-table [product-producer-def]
+to-report get_difficulty_table [product-producer-def]
   let difficulty-table table:make
   foreach product-producer-def [
     table:put difficulty-table item 0 ?1 item 1 ?1
@@ -73,11 +69,11 @@ to-report get-difficulty-table [product-producer-def]
   report difficulty-table
 end
 
-to-report get-difficulty [product-id]
+to-report get_difficulty [product-id]
   report table:get product-difficulty-table product-id
 end
 
-to-report get-product-quantity [product-id]
+to-report get_product_quantity [product-id]
   ifelse table:has-key? stash product-id [
     report table:get stash product-id
   ] [
@@ -86,40 +82,52 @@ to-report get-product-quantity [product-id]
 end
 
 to process_rfqs
-  foreach current-messages[ ;; sender kind (template-product-id quantity)
-    if item 1 ? = "RFQ" and product-in-process = item 0  item 2 ?
-    [ 
-     send_offer item 0 ? (create_offer item 0  item 2 ?)
+  foreach current-messages [ ;; sender kind (template-product-id quantity)
+    let tp-id rfq_get_template_product_id ( message_get_content ? )
+    if message_get_kind ? = "RFQ" and product-in-process = tp-id [ 
+     send_offer ( message_get_sender ? ) ( create_offer tp-id )
     ]
   ]
 end
 
-to-report create_offer[tp-id ]
+to-report create_offer [ tp-id ]
   ;; rfq : product unit-price quantity
-  report (list tp-id (calc_unit_price tp-id) (get-product-quantity tp-id))
+  report (list tp-id (calc_unit_price tp-id) (get_product_quantity tp-id))
 end
 
 to send_offer [ recipient message ]
   send_message recipient self "OFFER" message
 end
 
+to-report offer_get_template_product_id [ offer-message ]
+  report item 0 offer-message
+end
+
+to-report offer_get_value [ offer-message ]
+  report item 1 offer-message
+end
+
+to-report offer_get_quantity [ offer-message ]
+  report item 2 offer-message
+end
+
 ;; Product Selection Strategies
 
-to-report select-product
+to-report select_product
   let selected-product-id -1
   ifelse table:has-key? PRODUCT-SELECTION-STRATEGY-TABLE product-selection-strategy [
     let product-selection-strategy-task table:get PRODUCT-SELECTION-STRATEGY-TABLE product-selection-strategy
     ask runresult product-selection-strategy-task [
       set selected-product-id template-product-id
     ]
-    show (word "Selected product [" selected-product-id "]:[" get-template-name selected-product-id "]")
+    show (word "Selected product [" selected-product-id "]:[" get_template_name selected-product-id "]")
   ] [
     show "No product-selection-strategy set."
   ]
   report selected-product-id
 end
 
-to-report select-max-ratio-product
+to-report select_max_ratio_product
   let table product-difficulty-table
   let best-product max-n-of 1 products [
     (1 - ( table:get table template-product-id )) * units-per-tick
@@ -127,7 +135,7 @@ to-report select-max-ratio-product
   report best-product
 end
 
-to-report select-easiest-to-produce-product
+to-report select_easiest_to_produce_product
   let table product-difficulty-table
   let best-product max-n-of 1 products [
     1 - (table:get table template-product-id)
@@ -135,7 +143,7 @@ to-report select-easiest-to-produce-product
   report best-product
 end
 
-to-report select-most-abundant-product
+to-report select_most_abundant_product
   let table product-difficulty-table
   let best-product max-n-of 1 products [
     units-per-tick
@@ -144,6 +152,6 @@ to-report select-most-abundant-product
 end
 
 to-report calc_unit_price[ tp-id ] 
-  let _price (get-difficulty tp-id) * (get_product_units_per_tick tp-id)
-  report _price / (get-product-quantity tp-id)
+  let _price (get_difficulty tp-id) * (get_product_units_per_tick tp-id)
+  report _price / (get_product_quantity tp-id)
 end

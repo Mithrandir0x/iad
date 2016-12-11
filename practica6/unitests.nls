@@ -1,16 +1,107 @@
+to test-all
+  test-strategies
+  test-create_rfqs
+  test-create_and_send_rfqs
+  test-process_rfqs
+end
+
 to test-strategies
+  set world-csv-file "worlds/hello-world"
+  load_world_file
+  
   show (word "easiest-to-produce for producer 1 expected 1 ")
   ask producers with [ id = 1 ] [
-    show [ word "id: " template-product-id ] of select-easiest-to-produce-product 
+    show [ word "id: " template-product-id ] of select_easiest_to_produce_product 
     ]
   
   show (word "most-abundant for producer 1 expected 2")
   ask producers with [ id = 1 ] [
-    show [ word "id: " template-product-id ] of select-most-abundant-product 
+    show [ word "id: " template-product-id ] of select_most_abundant_product 
     ]
   
   show (word "max-ratio-product for producer 1 expected 2")
   ask producers with [ id = 1 ] [
-    show [ word "id: " template-product-id ] of select-max-ratio-product 
+    show [ word "id: " template-product-id ] of select_max_ratio_product 
     ]
+end
+
+to test-create_rfqs
+  set world-csv-file "worlds/hello-world"
+  load_world_file
+  
+  ask market 0 [
+    let rfqs create_rfqs
+    if not ( is-list? rfqs ) [ show "[rfqs] is not a list." stop ]
+    if not ( length rfqs = 3 ) [ show "[rfqs] does not have the correct length." stop ]
+    foreach rfqs [
+      if not ( item 0 ?1 > 0 and item 0 ?1 < 4 ) [ show ( word "[rfqs] item at [" ?1 "] not the expected product template id. Actual [" item 0 ?1 "]." ) stop ]
+    ]
+  ]
+  
+  show "Test [test-create_rfqs] ended succesfully."
+end
+
+to test-create_and_send_rfqs
+  set world-csv-file "worlds/hello-world"
+  load_world_file
+  
+  ask market 0 [
+    create_and_send_rfqs
+    
+    if not ( table:length proposed-rfqs = 3 ) [ show ( word "Unexpected size of [proposed-rfqs]. Expected [3] Actual [" length next-messages "]." ) stop ]
+  ]
+
+  ask producers [
+    if not ( length next-messages = 3 ) [ show ( word "Unexpected size of [next-messages]. Expected [3] Actual [" length next-messages "]." ) stop ]
+    let msg item 0 next-messages
+    if not ( message_get_kind msg = "RFQ" ) [ show ( word "Unexpected type of message. Expected [RFQ] Actual [" length message_get_kind msg "]." ) stop ]
+  ]
+  
+  show "Test [test-create_and_send_rfqs] ended succesfully."
+end
+
+to test-process_rfqs
+  let offer-table table:make
+  table:put offer-table 1 (list 1 3)
+  table:put offer-table 2 (list 1.125 2)
+  table:put offer-table 3 (list 1 2)
+  
+  set world-csv-file "worlds/hello-world"
+  load_world_file
+
+  ask producer 4 [
+    set product-in-process 1
+    force_product_production 1
+  ]
+  ask producer 5 [
+    set product-in-process 2
+    force_product_production 2
+  ]
+  ask producer 6 [
+    set product-in-process 3
+    force_product_production 3
+  ]
+  
+  ask market 0 [
+    create_and_send_rfqs
+  ]
+  swap_messages
+
+  ask producers [
+    process_rfqs
+  ]
+  
+  ask market 0 [
+    if not ( length next-messages = 3 ) [ show ( word "Unexpected size of [next-messages]. Expected [3] Actual [" length next-messages "]." ) stop ]
+    foreach next-messages [
+      if not ( message_get_kind ? = "OFFER" ) [ show ( word "Unexpected type of message. Expected [OFFER] Actual [" length message_get_kind ? "]." ) stop ]
+      
+      let content message_get_content ?
+      let expected-values table:get offer-table ( offer_get_template_product_id content )
+      if not ( offer_get_value content = item 0 expected-values ) [ show ( word "Unexpected value for offer [" offer_get_template_product_id content "]. Expected [" item 0 expected-values "] Actual [" offer_get_value content "]." ) stop ]
+      if not ( offer_get_quantity content = item 1 expected-values ) [ show ( word "Unexpected product quantity for offer [" offer_get_template_product_id content "]. Expected [" item 1 expected-values "] Actual [" offer_get_quantity content "]." ) stop ]
+    ]
+  ]
+  
+  show "Test [test-process_rfqs] ended succesfully."
 end

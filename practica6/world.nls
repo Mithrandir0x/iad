@@ -1,10 +1,12 @@
 
 to initialize-random-world
-  initialize-world [] [] []
+  initialize_world [] [] []
 end
 
-to initialize-world [markets-to-load products-to-load producers-to-load]
-  Initialize-product-selection-strategy-table
+to initialize_world [markets-to-load products-to-load producers-to-load]
+  Initialize_product_selection_strategy_table
+  
+  reset-ticks
   
   ifelse length markets-to-load > 0 and length products-to-load > 0 and length producers-to-load > 0 [
     ;; Loaded world
@@ -17,12 +19,13 @@ to initialize-world [markets-to-load products-to-load producers-to-load]
         set market-day-tick item 3 ?1
         set shape "house"
         set next-messages []
+        set proposed-rfqs table:make
       ]
     ]
     foreach products-to-load [
       create-products 1 [
         set template-product-id item 0 ?1
-        set units-per-tick ( get-template-units_per_tick template-product-id )
+        set units-per-tick ( get_template_units_per_tick template-product-id )
         set xcor item 1 ?1
         set ycor item 2 ?1
         set shape "plant"
@@ -34,11 +37,11 @@ to initialize-world [markets-to-load products-to-load producers-to-load]
         set xcor item 1 ?1
         set ycor item 2 ?1
         set product-selection-strategy item 3 ?1
-        set product-difficulty-table get-difficulty-table item 4 ?1
+        set product-difficulty-table get_difficulty_table item 4 ?1
         set shape "person"
         set energy 50 + (random 50)
         set next-messages[]
-        initialize-producer
+        initialize_stash
       ]
     ]
   ] [
@@ -47,51 +50,52 @@ to initialize-world [markets-to-load products-to-load producers-to-load]
   ]
 end
 
-to load-world-file
+to load_world_file
   ifelse length world-csv-file > 0 [
     clear-all
-    load-template-products
-    let markets-to-load load-markets
-    let products-to-load load-products
-    let producers-to-load load-producers
-    initialize-world markets-to-load products-to-load producers-to-load
+    load_template_products
+    let markets-to-load load_markets
+    let products-to-load load_products
+    let producers-to-load load_producers
+    initialize_world markets-to-load products-to-load producers-to-load
+    reset-ticks
   ] [
     show "variable [world-csv-file] cannot be empty."
   ]
 end
 
-to save-world-file
+to save_world_file
   show "Not implemented yet."
 end
 
-to clear-world-file
+to clear_world_file
   set world-csv-file ""
 end
 
-to load-template-products
-  initialize-template-products-table
+to load_template_products
+  initialize_template_products_table
   file-open (word world-csv-file "/" "template_products.csv")
   while [ not file-at-end? ] [
     let row csv:from-row file-read-line
     if is-number? item 0 row [
-      add-template-product row
+      add_template_product row
       show (word "Loaded product [" item 1 row "]")
     ]
   ]
   file-close-all
 end
 
-to-report load-markets
+to-report load_markets
   ;; report csv:from-file (word world-csv-file "/" "markets.csv")
-  report load-raw-csv "markets"
+  report load_raw_csv "markets"
 end
 
-to-report load-products
+to-report load_products
   ;; report csv:from-file (word world-csv-file "/" "products.csv")
-  report load-raw-csv "products"
+  report load_raw_csv "products"
 end
 
-to-report load-producers
+to-report load_producers
   let producers-to-load []
   ifelse file-exists? (word world-csv-file "/" "producers.csv") [
     file-open (word world-csv-file "/" "producers.csv")
@@ -100,12 +104,12 @@ to-report load-producers
       if is-number? item 0 row [
         let producer-conf []
         let producer-id item 0 row
-        let producer-parameters load-producer-product-parameters producer-id
+        let producer-parameters load_producer_product_parameters producer-id
         set producer-conf lput producer-id producer-conf
         set producer-conf lput ( item 1 row ) producer-conf
         set producer-conf lput ( item 2 row ) producer-conf
         set producer-conf lput ( item 3 row ) producer-conf
-        set producer-conf lput ( load-producer-product-parameters producer-id ) producer-conf
+        set producer-conf lput producer-parameters producer-conf
         set producers-to-load lput producer-conf producers-to-load
         
         ;; Ensure not loosing the file-handle while iterating the list
@@ -119,7 +123,7 @@ to-report load-producers
   ]
 end
 
-to-report load-producer-product-parameters [producer-id]
+to-report load_producer_product_parameters [producer-id]
   let product-parameters []
   file-open (word world-csv-file "/" "producers_product_parameters.csv")
   while [ not file-at-end? ] [
@@ -135,7 +139,7 @@ to-report load-producer-product-parameters [producer-id]
   report product-parameters
 end
 
-to-report load-raw-csv [file]
+to-report load_raw_csv [file]
   let csv-data []
   file-open (word world-csv-file "/" file ".csv")
   while [ not file-at-end? ] [
