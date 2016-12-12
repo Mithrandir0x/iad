@@ -4,6 +4,11 @@ to setup_monitors
  set MONITOR-HOUSES-BOUGHT 0
 end
 
+to setup_lists
+  set LIST-CONSTRUCTION-PRICES []
+  set LIST-BUYING-PRICES []
+end
+
 to update_monitors
   
   set MONITOR-MAX-SAVINGS max [money] of humans
@@ -21,3 +26,11 @@ to update_monitors
 end
 
 
+
+to new_house_built [ price ]
+  set LIST-CONSTRUCTION-PRICES lput price LIST-CONSTRUCTION-PRICES
+end 
+
+to new_house_bought [ price ]
+  set LIST-BUYING-PRICES lput price LIST-BUYING-PRICES
+end 

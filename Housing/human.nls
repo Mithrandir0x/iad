@@ -49,7 +49,7 @@ to human_behave
   human_update_color
   set life life - 1
   if num-houses = 0
-  [ set life life - 5 ]
+  [ set life life + HOMELESS-LIFE-EXPECTANCY  ]
   walk
 end
 
@@ -113,16 +113,22 @@ to buy_houses
       ]
       set owner myself
     ]
+    
+    ;; adds the price to the list
+    new_house_bought [base-price] of affordable
+    
     set money money - [base-price] of affordable
     set num-houses num-houses +  1
   ]
 end
 
 to build_houses
+  let pr-required calc_money_build_house
+  
   ;; required SMI
-  let pr-required SMI * HOUSE-CONSTRUCTION-REQUIRED-SMI
+  ;;let pr-required SMI * HOUSE-CONSTRUCTION-REQUIRED-SMI
   ;; required IPC%
-  set pr-required pr-required + (pr-required * IPC * 0.01)
+  ;;set pr-required pr-required + (pr-required * IPC * 0.01)
   
   if money > pr-required [ set can-build true]
 end

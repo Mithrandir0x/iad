@@ -25,6 +25,9 @@ globals[
   MONITOR-HOUSES-BUILT
   MONITOR-HOUSES-BOUGHT
 
+  ;; LISTS
+  LIST-CONSTRUCTION-PRICES
+  LIST-BUYING-PRICES
 
 ]
 
@@ -32,6 +35,7 @@ __includes[
   "human.nls"
   "house.nls"
   "plots-and-monitors.nls"
+  "formulas.nls"
   ]
 
 
@@ -66,6 +70,7 @@ to setup
     initialize_human
   ]
 
+  setup_lists
   reset-ticks
   setup_monitors
   update_monitors
@@ -139,8 +144,9 @@ to humans_build
     ;;let human-able ?
 
     let coords nobody
+    set coords get_coords_new_house
 
-    set coords one-of patches with [free] with-min [ distance one-of councils ]
+    ;;set coords one-of patches with [free] with-min [ distance one-of councils ]
 
     if coords != nobody
     [
@@ -156,6 +162,9 @@ to humans_build
 
         ask human-able [ set money money - [base-price] of myself ]
         show ( word human-able " builds a house at " coords " for " base-price)
+
+        ;; adds the new house to the list
+        new_house_built base-price
       ]
 
       ask human-able[
@@ -171,7 +180,7 @@ to humans_procreate
   foreach able-to-procreate[
     if HOMELES-CAN-PROCREATE or [num-houses > 0] of ?
     [
-      create-humans random 3[
+      create-humans 1 + random 3[
         initialize_son ?
       ]
       ;; father loses 25% of money
@@ -343,7 +352,7 @@ MAX-HOUSES-IN-PROPERTY
 MAX-HOUSES-IN-PROPERTY
 1
 5
-3
+1
 1
 1
 NIL
@@ -445,7 +454,7 @@ HOUSE-BASE-VALUE
 HOUSE-BASE-VALUE
 1
 100
-10
+11
 1
 1
 smis
@@ -493,7 +502,7 @@ HOUSE-CONSTRUCTION-REQUIRED-SMI
 HOUSE-CONSTRUCTION-REQUIRED-SMI
 1
 100
-11
+50
 1
 1
 smis
@@ -607,7 +616,7 @@ IPC
 IPC
 1
 100
-7
+10
 1
 1
 %
@@ -634,6 +643,21 @@ MONITOR-HOUSES-BOUGHT
 0
 1
 11
+
+SLIDER
+815
+245
+1140
+278
+HOMELESS-LIFE-EXPECTANCY
+HOMELESS-LIFE-EXPECTANCY
+-10
+-1
+-1
+1
+1
+ticks
+HORIZONTAL
 
 @#$#@#$#@
 ## WHAT IS IT?

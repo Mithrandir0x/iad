@@ -47,11 +47,13 @@ end
 
 
 to-report calc_base_price
-  let pr HOUSE-BASE-VALUE * SMI 
+  report calc_house_base_price self
+  
+  ;;let pr HOUSE-BASE-VALUE * SMI 
   ;; apply ipc to a house
-  set pr pr + (pr * IPC * 0.01)
+  ;;set pr pr + (pr * IPC * 0.01)
   ;; apply an increment based on the distance to the city council
   ;; 1 unit is 1% more expensive
-  set pr pr + (pr * 0.01 * distance city-council)
-  report pr 
+  ;;set pr pr + (pr * 0.01 * distance city-council)
+  ;;report pr 
 end

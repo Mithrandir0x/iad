@@ -1,0 +1,29 @@
+
+to-report calc_house_base_price [ house ]
+  let pr HOUSE-BASE-VALUE * SMI 
+  ;; apply ipc to a house
+  set pr pr + (pr * IPC * 0.01)
+  ;; apply an increment based on the distance to the city council
+  ;; 1 unit is 1% more expensive
+  set pr pr + (pr * 0.01 * [distance city-council] of house)
+  report pr 
+end
+
+
+
+
+to-report calc_money_build_house
+  ;; required SMI
+  let pr-required SMI * HOUSE-CONSTRUCTION-REQUIRED-SMI
+  ;; required IPC%
+  set pr-required pr-required + (pr-required * IPC * 0.01)
+  report pr-required
+end 
+
+
+to-report get_coords_new_house
+  ;; reports one of the nearest patches to the city council
+  ;; this could be modified to apply a different behaviour
+  ;; maybe a base price to construct in a certain patch and return the cheapest
+  report one-of patches with [free] with-min [ distance one-of councils ]
+end
