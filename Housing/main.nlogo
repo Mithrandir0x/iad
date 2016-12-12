@@ -255,7 +255,7 @@ SMI
 SMI
 1
 1500
-602
+593
 1
 1
 €
@@ -352,7 +352,7 @@ MAX-HOUSES-IN-PROPERTY
 MAX-HOUSES-IN-PROPERTY
 1
 5
-1
+4
 1
 1
 NIL
@@ -426,7 +426,7 @@ SWITCH
 379
 HOMELES-CAN-PROCREATE
 HOMELES-CAN-PROCREATE
-0
+1
 1
 -1000
 
@@ -454,7 +454,7 @@ HOUSE-BASE-VALUE
 HOUSE-BASE-VALUE
 1
 100
-11
+9
 1
 1
 smis
@@ -502,7 +502,7 @@ HOUSE-CONSTRUCTION-REQUIRED-SMI
 HOUSE-CONSTRUCTION-REQUIRED-SMI
 1
 100
-50
+9
 1
 1
 smis
@@ -616,7 +616,7 @@ IPC
 IPC
 1
 100
-10
+3
 1
 1
 %
@@ -653,7 +653,7 @@ HOMELESS-LIFE-EXPECTANCY
 HOMELESS-LIFE-EXPECTANCY
 -10
 -1
--1
+-10
 1
 1
 ticks
@@ -717,7 +717,28 @@ HOUSING (a general understanding of what the model is trying to show or explain)
 
 ### Ofertas
 
-* Un humano puede hacer una oferta al dueño de una casa
+* Un humano puede hacer una oferta de compra  RFQ al dueño de una casa que no vive en ella
+
+    * de las x casas que tiene a distancia y, con un precio base menor que su dinero, si esta libre, la compra !prioriza la libre siempre por delante de la que tiene dueño
+
+    * si las x casas que tiene a distancia y, con un precio base menor que su dinero, todas tienen dueño, decide hacer z ofertas mediante las siguientes condiciones:
+
+        * let assumed-value ( ( max [ base-price of x ] - min [ base-price of x ] ) / SOCIAL-STATUSES ) * social-status
+        * base-price < assumed-value and money < assumed-value
+
+    * human-sender "RFQ" ( list house-id money ) donde money es base-price del
+
+* un humano puede recibir una oferta de compra RFQ de distintos humanos compradores:
+
+    * de las x ofertas recibidas, escogerá en función de distintas estrategias:
+
+        * maximizar la cantidad de dinero. El comprador que ofrezca más dinero en la primera ronda se queda la casa.
+
+        * maximiza la cantidad de dinero y el comprador es de un estátus social igual o por encima del vendedor.
+
+* un humano vendedor puede hacer una contra-oferta "OFFER" pidiendo más dinero por la casa.
+
+* Un humano puede comprar una casa que esta libre
 
 
 
