@@ -1,3 +1,5 @@
+extensions[ array table ]
+
 breed[ councils council ]
 patches-own[ free ]
 
@@ -77,6 +79,8 @@ to setup
 end
 
 to go
+  swap_messages
+
   if ticks mod EARN-EACH = 0 [ humans_earn ]
   ;;if ticks mod LOSE-EACH = 0 [ humans_lose ]
 
@@ -201,6 +205,41 @@ to kill_humans
     die
   ]
 end
+
+
+
+to swap_messages
+  ask humans [
+    set current-messages next-messages
+    set next-messages []
+  ]
+end
+
+
+
+to send_message [ recipient sender kind message ]
+  ask recipient [
+    ;; sender, kind, message
+    ; print (word recipient " recieves [" kind "] message witch content [" message "] from [" sender "]" )
+    set next-messages lput (list sender kind message) next-messages
+  ]
+end
+
+to-report message_get_sender [ msg ]
+  report item 0 msg
+end
+
+to-report message_get_kind [ msg ]
+  report item 1 msg
+end
+
+to-report message_get_content [ msg ]
+  report item 2 msg
+end
+
+
+
+
 @#$#@#$#@
 GRAPHICS-WINDOW
 16
@@ -439,7 +478,7 @@ SOCIAL-STATUSES
 SOCIAL-STATUSES
 2
 5
-2
+5
 1
 1
 NIL

@@ -57,3 +57,11 @@ to-report calc_base_price
   ;;set pr pr + (pr * 0.01 * distance city-council)
   ;;report pr 
 end
+
+to-report calc_buyable_base_price
+  ifelse owner != nobody [
+    report calc_owned_house_base_price self
+  ] [
+    report base-price
+  ]
+end

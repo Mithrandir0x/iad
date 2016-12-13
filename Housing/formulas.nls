@@ -9,7 +9,16 @@ to-report calc_house_base_price [ house ]
   report pr 
 end
 
+to-report calc_owned_house_base_price [ house ]
+  let house-base-price [ base-price ] of house
+  let house-owner [ owner ] of house
+  report house-base-price + ( ( house-base-price * 0.25 ) * ( [ social-status ] of house-owner / SOCIAL-STATUSES ) )
+end
 
+to-report calc_owned_house_rfq_price [ recipient house ]
+  let house-base-price [ base-price ] of house
+  report house-base-price + ( ( house-base-price * 0.1 ) * ( [ social-status ] of recipient / SOCIAL-STATUSES ) )
+end
 
 
 to-report calc_money_build_house
@@ -27,3 +36,6 @@ to-report get_coords_new_house
   ;; maybe a base price to construct in a certain patch and return the cheapest
   report one-of patches with [free] with-min [ distance one-of councils ]
 end
+
+
+
