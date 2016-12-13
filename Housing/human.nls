@@ -40,6 +40,7 @@ end
 
 to human_behave
   if length current-messages > 0 [
+    evaluate_accept_offers
     evaluate_rfqs
   ]
   
