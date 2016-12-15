@@ -6,6 +6,9 @@ humans-own[
   num-houses
   can-build
   social-status
+  ;; father nobody
+  ;; eloquence random 50
+  ;; expertise 0
   
   current-messages
   next-messages

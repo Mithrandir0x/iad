@@ -9,6 +9,7 @@ globals[
   BAD-LUCK-EACH
   GOOD-LUCK-EACH
   LIFE-TO-PROCREATE
+  ;; RADIUS ;; precio de casa, casas alrededor
 
   ;; MONITORS
   MONITOR-MAX-SAVINGS
@@ -63,14 +64,21 @@ to setup
     ask patch-here [ set free false ]
   ]
 
-  create-houses INIT-HOUSES [
-    ask patch-here [ set free false ]
-    initialize_house one-of councils one-of patches with [free]
-  ]
+
+
 
   create-humans INIT-HUMANS [
     initialize_human
   ]
+
+
+   ;;; estas casas se asignan a los siguientes humanos aleatorios
+  create-houses INIT-HOUSES [
+    ask patch-here [ set free false ]
+    initialize_seed_house_of one-of councils one-of patches with [free] nobody
+  ]
+
+
 
   setup_lists
   reset-ticks
@@ -239,7 +247,6 @@ end
 
 
 
-
 @#$#@#$#@
 GRAPHICS-WINDOW
 16
@@ -309,7 +316,7 @@ INIT-HUMANS
 INIT-HUMANS
 1
 50
-50
+23
 1
 1
 NIL
@@ -324,7 +331,7 @@ INIT-HOUSES
 INIT-HOUSES
 0
 50
-0
+34
 1
 1
 NIL
@@ -391,7 +398,7 @@ MAX-HOUSES-IN-PROPERTY
 MAX-HOUSES-IN-PROPERTY
 1
 5
-4
+2
 1
 1
 NIL
@@ -478,7 +485,7 @@ SOCIAL-STATUSES
 SOCIAL-STATUSES
 2
 5
-5
+2
 1
 1
 NIL
@@ -541,7 +548,7 @@ HOUSE-CONSTRUCTION-REQUIRED-SMI
 HOUSE-CONSTRUCTION-REQUIRED-SMI
 1
 100
-9
+4
 1
 1
 smis
@@ -715,8 +722,6 @@ HOUSING (a general understanding of what the model is trying to show or explain)
 
 ### Humanos
 
-* Se genera un humano cada 10 ticks
-
 * Tienen una vida entre 500 y 1000 ticks
 
 * Cada 10 ticks reciben sueldo (el SMI)
@@ -735,6 +740,9 @@ HOUSING (a general understanding of what the model is trying to show or explain)
 
 * un humano puede construir una casa siempre que cumpla la norma del slider y pueda permitirse pagar 50 veces el SMI, pero pagará 25 veces el SMI para construirla.
 
+
+
+*
 
 ### Casas
 

@@ -5,6 +5,7 @@ houses-own[
   owner
   empty
   city-council
+  ;; life 1000 + random 1000
 ]
 
 
@@ -30,7 +31,7 @@ to initialize_house [ council the-patch]
   set owner nobody
   set empty true
   set city-council council
-  set base-price calc_base_price
+  set base-price calc_house_base_price self
   ask patch-here [ set free false]
 end
 
@@ -41,22 +42,22 @@ to initialize_house_of [ council the-patch the-owner]
   set owner the-owner
   set empty true
   set city-council council
-  set base-price calc_base_price
+  set base-price calc_house_base_price self
   ask patch-here [ set free false]
 end
 
 
-to-report calc_base_price
-  report calc_house_base_price self
-  
-  ;;let pr HOUSE-BASE-VALUE * SMI 
-  ;; apply ipc to a house
-  ;;set pr pr + (pr * IPC * 0.01)
-  ;; apply an increment based on the distance to the city council
-  ;; 1 unit is 1% more expensive
-  ;;set pr pr + (pr * 0.01 * distance city-council)
-  ;;report pr 
+to initialize_seed_house_of [ council the-patch the-owner]
+  setxy [pxcor] of the-patch [pycor] of the-patch
+  set shape "house"
+  set color red
+  set owner the-owner
+  set empty true
+  set city-council council
+  set base-price calc_seed_house_price self
+  ask patch-here [ set free false]
 end
+
 
 to-report calc_buyable_base_price
   ifelse owner != nobody [

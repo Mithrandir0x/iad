@@ -6,8 +6,16 @@ to-report calc_house_base_price [ house ]
   ;; apply an increment based on the distance to the city council
   ;; 1 unit is 1% more expensive
   set pr pr + (pr * 0.01 * [distance city-council] of house)
-  report pr 
+  report pr
 end
+
+to-report calc_seed_house_price [ house ]
+  let pr HOUSE-BASE-VALUE * SMI 
+  ;; apply ipc to a house
+  set pr pr + random pr
+  report pr
+end
+
 
 to-report calc_owned_house_base_price [ house ]
   let house-base-price [ base-price ] of house
@@ -27,7 +35,19 @@ to-report calc_money_build_house
   ;; required IPC%
   set pr-required pr-required + (pr-required * IPC * 0.01)
   report pr-required
+end
+
+
+to-report calc_money_build_house_2
+  let price -1
+  if any? houses in-radius 10 [
+    let base_vacias 0.4 * mean [base-price] of houses with [empty] in-radius 10
+    let base_ocupadas 0.6 * mean [base-price] of houses with [not empty] in-radius 10
+    set price base_vacias + base_ocupadas
+  ]
+  report price
 end 
+ 
 
 
 to-report get_coords_new_house
