@@ -81,6 +81,8 @@ to setup
   ]
 
 
+
+
   ;; updates shapes
   update_all_humans
   update_all_houses
@@ -88,6 +90,7 @@ to setup
 
   setup_lists
   reset-ticks
+  setup_mediator
   setup_monitors
   update_monitors
 end
@@ -111,7 +114,7 @@ to go
 
   ;;if (count humans with [ can-build ]) > 0 [ humans_build ]
 
-
+  mediator_behave
 
   population_control
 
@@ -201,7 +204,7 @@ to humans_procreate
     ]
     let sons random max-sons
 
-    if trace [ show (word ? " has " sons " sons") ]
+    if trace and sons > 0 [ show (word ? " has " sons " sons") ]
 
     create-humans sons[
       initialize_son ?
@@ -229,7 +232,7 @@ to kill_human [ _human ]
   ask _human[
     let sons humans with [father = myself]
 
-    ifelse any? sons
+    if any? sons
     [
       ;; give money to one son
       ask one-of sons [ set money money + [money] of myself ]
@@ -237,17 +240,31 @@ to kill_human [ _human ]
       ;; give houses randomly
       ask houses with [owner = myself]
       [
-        set owner one-of sons
-        ;; TODO
-        ;; check if the son is homeless to add the house as a main house
+        let heritage self
+        let lucky-son one-of sons with [num-houses < MAX-HOUSES-IN-PROPERTY]
+        ;; if there is nobody, this house will be removed at the end of the procedure
+        ;; ugly though
+        if lucky-son != nobody[
+          set owner lucky-son
+          if trace [ show (word myself " dies and gives " self " to " lucky-son )]
 
+          ;; checks if the son is homeless to add the house as a main house
+          ifelse [base-home = nobody] of lucky-son [
+            if trace [ show (word lucky-son " was homeless but not anymore, " heritage " is its new home ")]
+            ask lucky-son[ set base-home heritage]
+            set empty false
+          ]
+          [
+            set empty true
+          ]
+        ]
       ]
     ]
-    ;; destroy properties
-    [
 
-       ask houses with [owner =  myself][die]
-    ]
+    ;; destroy rest of properties
+
+    ask houses with [owner =  myself][die]
+
     die
   ]
 end
@@ -348,7 +365,7 @@ INIT-HOUSES
 INIT-HOUSES
 0
 50
-50
+15
 1
 1
 NIL
@@ -415,7 +432,7 @@ MAX-HOUSES-IN-PROPERTY
 MAX-HOUSES-IN-PROPERTY
 1
 20
-1
+10
 1
 1
 NIL
@@ -461,6 +478,7 @@ PENS
 "empty" 1.0 0 -2674135 true "" "plot MONITOR-EMPTY-HOUSES"
 "free" 1.0 0 -955883 true "" "plot MONITOR-FREE-HOUSES"
 "not empty" 1.0 0 -13840069 true "" "plot MONITOR-NOT-EMPTY-HOUSES"
+"total" 1.0 0 -16777216 true "" "plot count houses"
 
 PLOT
 554

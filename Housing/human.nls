@@ -68,7 +68,7 @@ to human_behave
   [ set life life + HOMELESS-LIFE-EXPECTANCY  ]
   walk
   
-  if num-houses > 0 or HOMELESS-CAN-BUILD
+  if (num-houses > 0 or HOMELESS-CAN-BUILD) and num-houses < MAX-HOUSES-IN-PROPERTY
   [
     if any? houses in-radius RADIUS and [free] of patch-here
     [

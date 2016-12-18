@@ -14,3 +14,53 @@ to mediator_add_construction [ _patch _who _price]
   if trace [ show (word _who " wants to build in " _patch " for " _price) ]
   set MEDIATOR-CONSTRUCTIONS lput (list _patch _who _price) MEDIATOR-CONSTRUCTIONS
 end
+
+
+
+to mediator_behave
+  
+  if not empty? MEDIATOR-CONSTRUCTIONS
+  [
+    mediator_build_constructions
+  ]
+  
+  
+  setup_mediator
+end
+
+
+to mediator_build_constructions
+  foreach MEDIATOR-CONSTRUCTIONS
+  [
+    let _patch item 0 ?
+    let _who item 1 ?
+    let _price item 2 ? 
+    if trace [ show (word "mediator building for " _who " on " _patch " for " _price) ]
+    
+    if [num-houses < MAX-HOUSES-IN-PROPERTY] of _who
+    [
+
+      ;; creates the house
+      create-houses 1[
+        ask _patch[ set free false ]
+        initialize_house _patch _who _price
+        if [base-home = nobody] of _who 
+        [ 
+          ask _who [ set base-home myself ] 
+          set empty false
+        ]
+      ]
+      
+      ;; modifies the owner
+      ask _who [ 
+        set num-houses num-houses + 1 
+        set money money - _price
+      ]
+      
+      ;; modifies the patch
+      ask _patch [set free false]
+    ]
+
+  ]
+  
+end
