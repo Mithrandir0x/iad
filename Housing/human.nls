@@ -118,7 +118,7 @@ end
 
 
 to-report buyable_houses
-  report houses in-radius 5 with [owner != nobody and calc_buyable_base_price < [money] of myself]
+  report min-one-of ( houses in-radius 5 with [owner != nobody and calc_buyable_base_price < [money] of myself] ) [ calc_buyable_base_price ]
 end
 
 
@@ -131,7 +131,7 @@ to buy_houses
   [
     let buyable buyable_houses
     if buyable != nobody [
-      let owners [ (list owner (house who) ( calc_owned_house_rfq_price myself (house who) ) ) ] of buyable
+      let owners [ (list owner (house who) ( calc_house_offer_price (house who) ) ) ] of buyable
       if length owners > 0 [
         foreach owners [
           ; recipient sender RFQ [ house-agent price ]
@@ -162,27 +162,8 @@ to do_buy_house [ affordable ]
   set num-houses num-houses +  1
 end
 
-
-to evaluate_rfqs
-  let rfq-messages filter [ message_get_kind ? = "RFQ" ] current-messages
-  if length rfq-messages > 0 [
-    ; first strategy of both ones
-    let accepted-rfq reduce [
-      ifelse-value (item 1 message_get_content ?1 >= item 1 message_get_content ?2) [?1] [?2]
-    ] rfq-messages
-    ; sender recipient ACCEPT-OFFER [ house-agent price ]
-    send_message (message_get_sender accepted-rfq) (human who) "ACCEPT-OFFER" (message_get_content accepted-rfq)
-  ]
-end
-
-to evaluate_accept_offers
-  let messages filter [ message_get_kind ? = "ACCEPT-OFFER" ] current-messages
-  if length messages > 0 [
-    let accepted-offer reduce [
-      ifelse-value (item 1 message_get_content ?1 < item 1 message_get_content ?2) [?1] [?2]
-    ] messages
-    do_buy_house (item 0 (message_get_content accepted-offer))
-  ]
+to-report is_house_affordable [ asked-price ]
+  report asked-price <= money
 end
 
 

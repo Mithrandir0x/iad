@@ -32,6 +32,8 @@ globals[
   LIST-CONSTRUCTION-PRICES
   LIST-BUYING-PRICES
 
+  OBS-CURRENT-MESSAGES
+  OBS-NEXT-MESSAGES
 ]
 
 __includes[
@@ -194,6 +196,25 @@ to humans_build
   ]
 end
 
+to humans_resolve_negotiations
+  let messages filter [ message_get_kind ? = "RFQ" ] OBS-CURRENT-MESSAGES
+  foreach messages [
+    let buyer ( message_get_sender ? )
+    let seller ( message_get_recipient ? )
+    let price item 1 ( message_get_content ? )
+    let negotiated-house item 0 ( message_get_content ? )
+
+    if calc_negotiation_score buyer < calc_negotiation_score seller [
+      set price calc_house_seller_price negotiated-house
+    ]
+
+    if [ price < money ] of buyer [
+      ask negotiated-house [ set base-price price ]
+      do_buy_house negotiated-house
+    ]
+  ]
+end
+
 to population_control
   if count humans < MIN-POPULATION [
     show (word "Creating humans")
@@ -286,25 +307,30 @@ end
 
 
 to send_message [ recipient sender kind message ]
-  ask recipient [
-    ;; sender, kind, message
-    ; print (word recipient " recieves [" kind "] message witch content [" message "] from [" sender "]" )
-    set next-messages lput (list sender kind message) next-messages
-  ]
+;  ask recipient [
+;    ;; sender, kind, message
+;    ; print (word recipient " recieves [" kind "] message witch content [" message "] from [" sender "]" )
+;    set next-messages lput (list sender kind message) next-messages
+;  ]
+  print (word recipient " recieves [" kind "] message witch content [" message "] from [" sender "]" )
+  set OBS-NEXT-MESSAGES lput (list sender recipient kind message) OBS-NEXT-MESSAGES
 end
 
 to-report message_get_sender [ msg ]
   report item 0 msg
 end
 
-to-report message_get_kind [ msg ]
+to-report message_get_recipient [ msg ]
   report item 1 msg
 end
 
-to-report message_get_content [ msg ]
+to-report message_get_kind [ msg ]
   report item 2 msg
 end
 
+to-report message_get_content [ msg ]
+  report item 3 msg
+end
 
 @#$#@#$#@
 GRAPHICS-WINDOW

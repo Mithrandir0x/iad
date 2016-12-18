@@ -29,6 +29,25 @@ to-report calc_owned_house_rfq_price [ recipient house ]
 end
 
 
+to-report calc_house_offer_price [ house ]
+  let house-base-price [ base-price ] of house
+  report house-base-price - ( calc_differential_price house )
+end
+
+to-report calc_house_seller_price [ house ]
+  let house-base-price [ base-price ] of house
+  report house-base-price + ( calc_differential_price house )
+end
+
+to-report calc_differential_price [ house ]
+  let house-base-price [ base-price ] of house
+  report ( 0.25 * ( house-base-price - min [ base-price ] of houses in-radius 5 ) / ( social-status + 1 ) )
+end
+
+to-report calc_negotiation_score [ human ]
+  report [ eloquence + expertise ] of human
+end
+
 to-report calc_money_build_house
   ;; required SMI
   let pr-required SMI * HOUSE-CONSTRUCTION-REQUIRED-SMI
