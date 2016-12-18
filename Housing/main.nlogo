@@ -10,6 +10,7 @@ globals[
   GOOD-LUCK-EACH
   LIFE-TO-PROCREATE
   RADIUS ;; precio de casa, casas alrededor
+  TRACE
 
   ;; MONITORS
   MONITOR-MAX-SAVINGS
@@ -32,6 +33,10 @@ globals[
   LIST-CONSTRUCTION-PRICES
   LIST-BUYING-PRICES
 
+  ;; MEDIATOR
+  MEDIATOR-OFFERS
+  MEDIATOR-CONSTRUCTIONS
+
   OBS-CURRENT-MESSAGES
   OBS-NEXT-MESSAGES
 ]
@@ -39,6 +44,7 @@ globals[
 __includes[
   "human.nls"
   "house.nls"
+  "mediator.nls"
   "plots-and-monitors.nls"
   "formulas.nls"
   ]
@@ -47,6 +53,7 @@ __includes[
 
 to setup
   clear-all
+  set TRACE true
   set LIFE-TO-PROCREATE 450
   set EARN-EACH 10
   set LOSE-EACH 10
@@ -60,16 +67,12 @@ to setup
     set pcolor grey
   ]
 
-
   create-councils INIT-CITY-COUNCILS[
     set shape "pentagon"
     set color black
     setxy 0 0
     ask patch-here [ set free false ]
   ]
-
-
-
 
   create-humans MIN-POPULATION [
     initialize_human
@@ -95,7 +98,7 @@ to setup
 end
 
 to go
-  swap_messages
+
 
   if ticks mod EARN-EACH = 0 [ humans_earn ]
   ;;if ticks mod LOSE-EACH = 0 [ humans_lose ]
@@ -110,13 +113,17 @@ to go
 
   if ticks mod GOOD-LUCK-EACH = 0 [ humans_good_luck ]
 
-  if (count humans with [ life = LIFE-TO-PROCREATE ]) > 0  [ humans_procreate ]
-  if (count humans with [ can-build ]) > 0 [ humans_build ]
+
+  ;;if (count humans with [ can-build ]) > 0 [ humans_build ]
 
 
 
-  kill_humans
   population_control
+
+  ;; updates shapes
+  update_all_humans
+  update_all_houses
+
   update_monitors
   tick
 end
@@ -155,45 +162,27 @@ to humans_good_luck
 end
 
 
-to humans_build
-  ;;let humans-able sort-on [money] humans with [can-build and num-houses < MAX-HOUSES-IN-PROPERTY]
-  let human-able nobody
-  set human-able one-of humans with [can-build and num-houses < MAX-HOUSES-IN-PROPERTY]
-  if human-able != nobody
-  [
-  ;;foreach humans-able[
-    ;;let human-able ?
+to population_control
 
-    let coords nobody
-    set coords get_coords_new_house
+  ;; the newcomers
+  humans_procreate
 
-    ;;set coords one-of patches with [free] with-min [ distance one-of councils ]
+  ;; kills elders
+  kill_humans
 
-    if coords != nobody
-    [
-      set MONITOR-HOUSES-BUILT MONITOR-HOUSES-BUILT + 1
-
-      ask coords[ set free false ]
-
-      create-houses 1[
-        initialize_house_of one-of councils coords human-able
-        if [ num-houses = 0 ] of human-able[ ;; house with owner and not empty
-          set empty false
-        ]
-
-        ask human-able [ set money money - [base-price] of myself ]
-        show ( word human-able " builds a house at " coords " for " base-price)
-
-        ;; adds the new house to the list
-        new_house_built base-price
+  if count humans < MIN-POPULATION [
+    if trace[show (word "Creating humans")]
+      create-humans 0.5 * MIN-POPULATION [
+        initialize_human
       ]
-
-      ask human-able[
-        set can-build false
-        set num-houses num-houses + 1
-      ]
-    ]
   ]
+
+  if count humans > 2 * DESIRED-POPULATION [
+    if trace[show (word "Killing  humans")    ]
+    let _humans sort n-of (0.25 * count humans) humans
+    foreach _humans [ kill_human ?]
+  ]
+
 end
 
 to humans_resolve_negotiations
@@ -215,37 +204,36 @@ to humans_resolve_negotiations
   ]
 end
 
-to population_control
-  if count humans < MIN-POPULATION [
-    show (word "Creating humans")
-      create-humans 0.5 * MIN-POPULATION [
-        initialize_human
-      ]
-  ]
-  if count humans > MAX-POPULATION [
-    show (word "Killing  humans")
-    let _humans sort n-of (0.25 * count humans) humans
-    foreach _humans [ kill_human ?]
-  ]
-
-end
-
 
 to humans_procreate
   let able-to-procreate sort-on [money] humans with [ life < LIFE-TO-PROCREATE and can-procreate]
   foreach able-to-procreate[
 
-    if HOMELES-CAN-PROCREATE or [num-houses > 0] of ?
+    let max-sons 2
+    ;; if population is low, humans may have more than 1 son
+    ifelse count humans < DESIRED-POPULATION / 2
     [
-      create-humans random 2[
-        initialize_son ?
-      ]
-      ;; father loses 25% of money
-      ask ? [
-        set money 0.75 * money
-        set can-procreate false
-        ]
+      set max-sons 4
     ]
+    [
+      if count humans < DESIRED-POPULATION
+      [
+        set max-sons 3
+      ]
+    ]
+    let sons random max-sons
+
+    if trace [ show (word ? " has " sons " sons") ]
+
+    create-humans sons[
+      initialize_son ?
+    ]
+    ;; father loses 25% of money
+    ask ? [
+      set money 0.75 * money
+      set can-procreate false
+      ]
+
   ]
 end
 
@@ -257,7 +245,6 @@ to kill_humans
   [
     kill_human ?
   ]
-
 end
 
 to kill_human [ _human ]
@@ -273,12 +260,15 @@ to kill_human [ _human ]
       ask houses with [owner = myself]
       [
         set owner one-of sons
+        ;; TODO
+        ;; check if the son is homeless to add the house as a main house
 
       ]
     ]
     ;; destroy properties
     [
-       ask houses with [owner =  myself][ die]
+
+       ask houses with [owner =  myself][die]
     ]
     die
   ]
@@ -295,23 +285,14 @@ to update_all_houses
  ask houses[ house_update_colors ]
 end
 
-
-
 to swap_messages
-  ask humans [
-    set current-messages next-messages
-    set next-messages []
-  ]
+  set OBS-CURRENT-MESSAGES OBS-NEXT-MESSAGES
+  set OBS-NEXT-MESSAGES []
 end
 
 
 
 to send_message [ recipient sender kind message ]
-;  ask recipient [
-;    ;; sender, kind, message
-;    ; print (word recipient " recieves [" kind "] message witch content [" message "] from [" sender "]" )
-;    set next-messages lput (list sender kind message) next-messages
-;  ]
   print (word recipient " recieves [" kind "] message witch content [" message "] from [" sender "]" )
   set OBS-NEXT-MESSAGES lput (list sender recipient kind message) OBS-NEXT-MESSAGES
 end
@@ -393,10 +374,10 @@ SMI
 HORIZONTAL
 
 SLIDER
-625
-435
-870
-468
+735
+110
+910
+143
 MIN-POPULATION
 MIN-POPULATION
 1
@@ -408,15 +389,15 @@ NIL
 HORIZONTAL
 
 SLIDER
-628
-197
-800
-230
+630
+155
+835
+188
 INIT-HOUSES
 INIT-HOUSES
 0
 50
-34
+50
 1
 1
 NIL
@@ -475,14 +456,14 @@ PENS
 "median" 1.0 0 -13840069 true "" "plot MONITOR-MEDIAN-SAVINGS"
 
 SLIDER
-627
-294
-853
-327
+630
+200
+862
+233
 MAX-HOUSES-IN-PROPERTY
 MAX-HOUSES-IN-PROPERTY
 1
-5
+20
 1
 1
 1
@@ -546,50 +527,24 @@ true
 true
 "" ""
 PENS
-"elders" 1.0 0 -955883 true "" "plot count humans with [ life < 300 ]"
-"adult" 1.0 0 -13840069 true "" "plot count humans with [ life >= 300 and life < 750 ]"
-"young" 1.0 0 -7500403 true "" "plot count humans with [ life >= 750 ]"
+"elders" 1.0 0 -955883 true "" "plot count humans with [ life < 200 ]"
+"adult" 1.0 0 -13840069 true "" "plot count humans with [ life >= 300 and life < 550 ]"
+"young" 1.0 0 -7500403 true "" "plot count humans with [ life >= 550 ]"
 "total" 1.0 0 -16777216 true "" "plot count humans"
 
-SWITCH
-628
-346
-872
-379
-HOMELES-CAN-PROCREATE
-HOMELES-CAN-PROCREATE
-0
-1
--1000
-
 SLIDER
-628
-394
-800
-427
+875
+200
+1145
+233
 SOCIAL-STATUSES
 SOCIAL-STATUSES
 2
 5
-2
+4
 1
 1
 NIL
-HORIZONTAL
-
-SLIDER
-807
-151
-1143
-184
-HOUSE-BASE-VALUE
-HOUSE-BASE-VALUE
-1
-100
-9
-1
-1
-smis
 HORIZONTAL
 
 MONITOR
@@ -624,21 +579,6 @@ MONITOR-MEDIAN-SAVINGS
 0
 1
 11
-
-SLIDER
-806
-196
-1143
-229
-HOUSE-CONSTRUCTION-REQUIRED-SMI
-HOUSE-CONSTRUCTION-REQUIRED-SMI
-1
-100
-4
-1
-1
-smis
-HORIZONTAL
 
 MONITOR
 460
@@ -742,7 +682,7 @@ count humans
 SLIDER
 631
 112
-1143
+726
 145
 IPC
 IPC
@@ -777,10 +717,10 @@ MONITOR-HOUSES-BOUGHT
 11
 
 SLIDER
-815
-245
-1140
-278
+845
+155
+1145
+188
 HOMELESS-LIFE-EXPECTANCY
 HOMELESS-LIFE-EXPECTANCY
 -10
@@ -792,19 +732,30 @@ ticks
 HORIZONTAL
 
 SLIDER
-885
-435
+915
+110
 1145
-468
-MAX-POPULATION
-MAX-POPULATION
+143
+DESIRED-POPULATION
+DESIRED-POPULATION
 500
 1000
-751
+600
 1
 1
 NIL
 HORIZONTAL
+
+SWITCH
+625
+290
+832
+323
+HOMELESS-CAN-BUILD
+HOMELESS-CAN-BUILD
+1
+1
+-1000
 
 @#$#@#$#@
 ## WHAT IS IT?

@@ -1,0 +1,15 @@
+to setup_mediator
+  set MEDIATOR-OFFERS []
+  set MEDIATOR-CONSTRUCTIONS []
+end
+
+
+
+to mediator_add_offer [ _house _who _price]
+    set MEDIATOR-OFFERS lput (list _house _who _price) MEDIATOR-OFFERS
+end
+
+
+to mediator_add_construction [ _patch _who _price]
+    set MEDIATOR-CONSTRUCTIONS lput (list _patch _who _price) MEDIATOR-CONSTRUCTIONS
+end

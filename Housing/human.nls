@@ -11,8 +11,6 @@ humans-own[
   eloquence
   expertise
   can-procreate
-  current-messages
-  next-messages
 ]
 
 
@@ -37,7 +35,25 @@ to initialize_son [_father]
   set color yellow
   setxy [xcor] of father [ycor] of father
   set can-build false
-  set social-status [social-status] of father
+  
+  ;; the social status is based on father's social status
+  ;; it can increase or decrease 1
+  ifelse [social-status = 0] of father
+  [ ;; social status may increase 1
+    set social-status ([social-status] of father) + random 2
+  ]
+  [
+    ifelse [social-status = SOCIAL-STATUSES] of father
+    [ ;; social status may decrease 1
+      set social-status ([social-status] of father) - random 2
+    ]
+    [;; social status may increase or decrease 1
+      set social-status ([social-status] of father) + ( 1 - random 3)
+      
+    ]
+    
+  ]
+  
   set money 0.25 * [money] of father
   set life (random 500) + 500
   set eloquence random 50
@@ -47,35 +63,25 @@ to initialize_son [_father]
 end
 
 to human_behave
-  
-  ifelse ticks mod 2 = 0
-  ;; this is a fix to avoid building and buiying on the same tick
-  ;; both of them are performed async so it could be that 
-  ;; both are produced avoiding the rule MAX-HOUSES-IN-PROPERTY
-  [
-    if MAX-HOUSES-IN-PROPERTY > num-houses [
-  ;;    buy_houses
-    ]
-  ]
-  [
-    if MAX-HOUSES-IN-PROPERTY > num-houses [
-      build_houses
-    ]
-  ]
-  
-  update_shape
-  human_update_color
   set life life - 1
   if num-houses = 0
   [ set life life + HOMELESS-LIFE-EXPECTANCY  ]
   walk
+  
+  if num-houses > 0 or HOMELESS-CAN-BUILD
+  [
+    if any? houses in-radius RADIUS and any? patches in-radius RADIUS with [free]
+    [
+      let needed check_construction_prices patch-here
+    ]
+  ]
+  
 end
 
 
 to walk
   if money > 0
   [
-    set money money - IPC
     fd 1
     ;; rotates?
     if random 1 = 1
@@ -110,7 +116,6 @@ to update_shape
     [ set shape "face happy"]
   ]
 end
-
 
 to-report affordable_houses
   report one-of houses in-radius 5 with [owner = nobody and base-price < [money] of myself]
