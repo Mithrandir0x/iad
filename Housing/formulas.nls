@@ -28,17 +28,7 @@ to-report calc_owned_house_rfq_price [ recipient house ]
   report house-base-price + ( ( house-base-price * 0.1 ) * ( [ social-status ] of recipient / SOCIAL-STATUSES ) )
 end
 
-
 to-report calc_money_build_house
-  ;; required SMI
-  let pr-required SMI * HOUSE-CONSTRUCTION-REQUIRED-SMI
-  ;; required IPC%
-  set pr-required pr-required + (pr-required * IPC * 0.01)
-  report pr-required
-end
-
-
-to-report calc_money_build_house_2
   let price -1
   if any? houses in-radius 10 [
     let base_vacias 0.4 * mean [base-price] of houses with [empty] in-radius 10

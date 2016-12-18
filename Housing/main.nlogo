@@ -10,6 +10,7 @@ globals[
   GOOD-LUCK-EACH
   LIFE-TO-PROCREATE
   RADIUS ;; precio de casa, casas alrededor
+  TRACE
 
   ;; MONITORS
   MONITOR-MAX-SAVINGS
@@ -32,11 +33,15 @@ globals[
   LIST-CONSTRUCTION-PRICES
   LIST-BUYING-PRICES
 
+  ;; MEDIATOR
+  MEDIATOR-OFFERS
+  MEDIATOR-CONSTRUCTIONS
 ]
 
 __includes[
   "human.nls"
   "house.nls"
+  "mediator.nls"
   "plots-and-monitors.nls"
   "formulas.nls"
   ]
@@ -45,6 +50,7 @@ __includes[
 
 to setup
   clear-all
+  set TRACE true
   set LIFE-TO-PROCREATE 450
   set EARN-EACH 10
   set LOSE-EACH 10
@@ -58,16 +64,12 @@ to setup
     set pcolor grey
   ]
 
-
-  create-councils INIT-CITY-COUNCILS[
-    set shape "pentagon"
-    set color black
-    setxy 0 0
-    ask patch-here [ set free false ]
-  ]
-
-
-
+;;  create-councils INIT-CITY-COUNCILS[
+;;    set shape "pentagon"
+;;    set color black
+;;    setxy 0 0
+;;    ask patch-here [ set free false ]
+;;  ]
 
   create-humans MIN-POPULATION [
     initialize_human
@@ -77,7 +79,7 @@ to setup
    ;;; estas casas se asignan a los siguientes humanos aleatorios
   create-houses INIT-HOUSES [
     ask patch-here [ set free false ]
-    initialize_seed_house_of one-of councils one-of patches with [free] one-of humans with [num-houses < MAX-HOUSES-IN-PROPERTY]
+    initialize_seed_house_of one-of patches with [free] one-of humans with [num-houses < MAX-HOUSES-IN-PROPERTY]
   ]
 
 
@@ -93,7 +95,7 @@ to setup
 end
 
 to go
-  swap_messages
+
 
   if ticks mod EARN-EACH = 0 [ humans_earn ]
   ;;if ticks mod LOSE-EACH = 0 [ humans_lose ]
@@ -108,13 +110,17 @@ to go
 
   if ticks mod GOOD-LUCK-EACH = 0 [ humans_good_luck ]
 
-  if (count humans with [ life = LIFE-TO-PROCREATE ]) > 0  [ humans_procreate ]
-  if (count humans with [ can-build ]) > 0 [ humans_build ]
+
+  ;;if (count humans with [ can-build ]) > 0 [ humans_build ]
 
 
 
-  kill_humans
   population_control
+
+  ;; updates shapes
+  update_all_humans
+  update_all_houses
+
   update_monitors
   tick
 end
@@ -153,56 +159,23 @@ to humans_good_luck
 end
 
 
-to humans_build
-  ;;let humans-able sort-on [money] humans with [can-build and num-houses < MAX-HOUSES-IN-PROPERTY]
-  let human-able nobody
-  set human-able one-of humans with [can-build and num-houses < MAX-HOUSES-IN-PROPERTY]
-  if human-able != nobody
-  [
-  ;;foreach humans-able[
-    ;;let human-able ?
-
-    let coords nobody
-    set coords get_coords_new_house
-
-    ;;set coords one-of patches with [free] with-min [ distance one-of councils ]
-
-    if coords != nobody
-    [
-      set MONITOR-HOUSES-BUILT MONITOR-HOUSES-BUILT + 1
-
-      ask coords[ set free false ]
-
-      create-houses 1[
-        initialize_house_of one-of councils coords human-able
-        if [ num-houses = 0 ] of human-able[ ;; house with owner and not empty
-          set empty false
-        ]
-
-        ask human-able [ set money money - [base-price] of myself ]
-        show ( word human-able " builds a house at " coords " for " base-price)
-
-        ;; adds the new house to the list
-        new_house_built base-price
-      ]
-
-      ask human-able[
-        set can-build false
-        set num-houses num-houses + 1
-      ]
-    ]
-  ]
-end
-
 to population_control
+
+  ;; the newcomers
+  humans_procreate
+
+  ;; kills elders
+  kill_humans
+
   if count humans < MIN-POPULATION [
-    show (word "Creating humans")
+    if trace[show (word "Creating humans")]
       create-humans 0.5 * MIN-POPULATION [
         initialize_human
       ]
   ]
-  if count humans > MAX-POPULATION [
-    show (word "Killing  humans")
+
+  if count humans > 2 * DESIRED-POPULATION [
+    if trace[show (word "Killing  humans")    ]
     let _humans sort n-of (0.25 * count humans) humans
     foreach _humans [ kill_human ?]
   ]
@@ -214,17 +187,31 @@ to humans_procreate
   let able-to-procreate sort-on [money] humans with [ life < LIFE-TO-PROCREATE and can-procreate]
   foreach able-to-procreate[
 
-    if HOMELES-CAN-PROCREATE or [num-houses > 0] of ?
+    let max-sons 2
+    ;; if population is low, humans may have more than 1 son
+    ifelse count humans < DESIRED-POPULATION / 2
     [
-      create-humans random 2[
-        initialize_son ?
-      ]
-      ;; father loses 25% of money
-      ask ? [
-        set money 0.75 * money
-        set can-procreate false
-        ]
+      set max-sons 4
     ]
+    [
+      if count humans < DESIRED-POPULATION
+      [
+        set max-sons 3
+      ]
+    ]
+    let sons random max-sons
+
+    if trace [ show (word ? " has " sons " sons") ]
+
+    create-humans sons[
+      initialize_son ?
+    ]
+    ;; father loses 25% of money
+    ask ? [
+      set money 0.75 * money
+      set can-procreate false
+      ]
+
   ]
 end
 
@@ -236,7 +223,6 @@ to kill_humans
   [
     kill_human ?
   ]
-
 end
 
 to kill_human [ _human ]
@@ -257,7 +243,8 @@ to kill_human [ _human ]
     ]
     ;; destroy properties
     [
-       ask houses with [owner =  myself][ die]
+
+       ask houses with [owner =  myself][die]
     ]
     die
   ]
@@ -272,37 +259,6 @@ end
 
 to update_all_houses
  ask houses[ house_update_colors ]
-end
-
-
-
-to swap_messages
-  ask humans [
-    set current-messages next-messages
-    set next-messages []
-  ]
-end
-
-
-
-to send_message [ recipient sender kind message ]
-  ask recipient [
-    ;; sender, kind, message
-    ; print (word recipient " recieves [" kind "] message witch content [" message "] from [" sender "]" )
-    set next-messages lput (list sender kind message) next-messages
-  ]
-end
-
-to-report message_get_sender [ msg ]
-  report item 0 msg
-end
-
-to-report message_get_kind [ msg ]
-  report item 1 msg
-end
-
-to-report message_get_content [ msg ]
-  report item 2 msg
 end
 
 
@@ -520,21 +476,10 @@ true
 true
 "" ""
 PENS
-"elders" 1.0 0 -955883 true "" "plot count humans with [ life < 300 ]"
-"adult" 1.0 0 -13840069 true "" "plot count humans with [ life >= 300 and life < 750 ]"
-"young" 1.0 0 -7500403 true "" "plot count humans with [ life >= 750 ]"
+"elders" 1.0 0 -955883 true "" "plot count humans with [ life < 200 ]"
+"adult" 1.0 0 -13840069 true "" "plot count humans with [ life >= 300 and life < 550 ]"
+"young" 1.0 0 -7500403 true "" "plot count humans with [ life >= 550 ]"
 "total" 1.0 0 -16777216 true "" "plot count humans"
-
-SWITCH
-628
-346
-872
-379
-HOMELES-CAN-PROCREATE
-HOMELES-CAN-PROCREATE
-0
-1
--1000
 
 SLIDER
 628
@@ -545,7 +490,7 @@ SOCIAL-STATUSES
 SOCIAL-STATUSES
 2
 5
-2
+4
 1
 1
 NIL
@@ -770,11 +715,11 @@ SLIDER
 435
 1145
 468
-MAX-POPULATION
-MAX-POPULATION
+DESIRED-POPULATION
+DESIRED-POPULATION
 500
 1000
-751
+600
 1
 1
 NIL
