@@ -37,7 +37,7 @@ to mediator_build_constructions
     let _price item 2 ? 
     if trace [ show (word "mediator building for " _who " on " _patch " for " _price) ]
     
-    if [num-houses < MAX-HOUSES-IN-PROPERTY] of _who
+    if [num-houses < MAX-HOUSES-IN-PROPERTY] of _who and [empty] of _patch
     [
 
       ;; creates the house
