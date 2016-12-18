@@ -24,25 +24,25 @@ to house_update_colors
 end
 
 
-to initialize_house_of [the-patch the-owner]
+to initialize_house_of [ council the-patch the-owner]
   setxy [pxcor] of the-patch [pycor] of the-patch
   set shape "house"
   set color red
   set owner the-owner
   set empty true
-  set city-council nobody
-  set base-price calc_house_base_price self
+  set city-council council
+  set base-price 0;; calc_house_base_price self
   ask patch-here [ set free false]
 
 end
 
 
-to initialize_seed_house_of [the-patch the-owner]
+to initialize_seed_house_of [council the-patch the-owner]
   setxy [pxcor] of the-patch [pycor] of the-patch
   set shape "house"
   set owner the-owner
   set empty true
-  set city-council nobody
+  set city-council council
   set base-price calc_seed_house_price self
   ask patch-here [ set free false]
   

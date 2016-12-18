@@ -11,7 +11,6 @@ humans-own[
   eloquence
   expertise
   can-procreate
-
 ]
 
 
@@ -55,8 +54,6 @@ to initialize_son [_father]
     
   ]
   
-  
-  
   set money 0.25 * [money] of father
   set life (random 500) + 500
   set eloquence random 50
@@ -70,13 +67,21 @@ to human_behave
   if num-houses = 0
   [ set life life + HOMELESS-LIFE-EXPECTANCY  ]
   walk
+  
+  if num-houses > 0 or HOMELESS-CAN-BUILD
+  [
+    if any? houses in-radius RADIUS and any? patches in-radius RADIUS with [free]
+    [
+      let needed check_construction_prices patch-here
+    ]
+  ]
+  
 end
 
 
 to walk
   if money > 0
   [
-    set money money - IPC
     fd 1
     ;; rotates?
     if random 1 = 1
@@ -110,15 +115,5 @@ to update_shape
     [ set shape "face neutral"]
     [ set shape "face happy"]
   ]
-end
-
-
-
-
-
-
-
-to build_houses
-
 end
 

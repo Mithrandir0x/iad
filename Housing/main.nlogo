@@ -64,12 +64,12 @@ to setup
     set pcolor grey
   ]
 
-;;  create-councils INIT-CITY-COUNCILS[
-;;    set shape "pentagon"
-;;    set color black
-;;    setxy 0 0
-;;    ask patch-here [ set free false ]
-;;  ]
+  create-councils INIT-CITY-COUNCILS[
+    set shape "pentagon"
+    set color black
+    setxy 0 0
+    ask patch-here [ set free false ]
+  ]
 
   create-humans MIN-POPULATION [
     initialize_human
@@ -79,7 +79,7 @@ to setup
    ;;; estas casas se asignan a los siguientes humanos aleatorios
   create-houses INIT-HOUSES [
     ask patch-here [ set free false ]
-    initialize_seed_house_of one-of patches with [free] one-of humans with [num-houses < MAX-HOUSES-IN-PROPERTY]
+    initialize_seed_house_of one-of councils one-of patches with [free] one-of humans with [num-houses < MAX-HOUSES-IN-PROPERTY]
   ]
 
 
@@ -238,6 +238,8 @@ to kill_human [ _human ]
       ask houses with [owner = myself]
       [
         set owner one-of sons
+        ;; TODO
+        ;; check if the son is homeless to add the house as a main house
 
       ]
     ]
@@ -323,10 +325,10 @@ SMI
 HORIZONTAL
 
 SLIDER
-625
-435
-870
-468
+735
+110
+910
+143
 MIN-POPULATION
 MIN-POPULATION
 1
@@ -338,15 +340,15 @@ NIL
 HORIZONTAL
 
 SLIDER
-628
-197
-800
-230
+630
+155
+835
+188
 INIT-HOUSES
 INIT-HOUSES
 0
 50
-34
+50
 1
 1
 NIL
@@ -405,14 +407,14 @@ PENS
 "median" 1.0 0 -13840069 true "" "plot MONITOR-MEDIAN-SAVINGS"
 
 SLIDER
-627
-294
-853
-327
+630
+200
+862
+233
 MAX-HOUSES-IN-PROPERTY
 MAX-HOUSES-IN-PROPERTY
 1
-5
+20
 1
 1
 1
@@ -482,10 +484,10 @@ PENS
 "total" 1.0 0 -16777216 true "" "plot count humans"
 
 SLIDER
-628
-394
-800
-427
+875
+200
+1145
+233
 SOCIAL-STATUSES
 SOCIAL-STATUSES
 2
@@ -494,21 +496,6 @@ SOCIAL-STATUSES
 1
 1
 NIL
-HORIZONTAL
-
-SLIDER
-807
-151
-1143
-184
-HOUSE-BASE-VALUE
-HOUSE-BASE-VALUE
-1
-100
-9
-1
-1
-smis
 HORIZONTAL
 
 MONITOR
@@ -543,21 +530,6 @@ MONITOR-MEDIAN-SAVINGS
 0
 1
 11
-
-SLIDER
-806
-196
-1143
-229
-HOUSE-CONSTRUCTION-REQUIRED-SMI
-HOUSE-CONSTRUCTION-REQUIRED-SMI
-1
-100
-4
-1
-1
-smis
-HORIZONTAL
 
 MONITOR
 460
@@ -661,7 +633,7 @@ count humans
 SLIDER
 631
 112
-1143
+726
 145
 IPC
 IPC
@@ -696,10 +668,10 @@ MONITOR-HOUSES-BOUGHT
 11
 
 SLIDER
-815
-245
-1140
-278
+845
+155
+1145
+188
 HOMELESS-LIFE-EXPECTANCY
 HOMELESS-LIFE-EXPECTANCY
 -10
@@ -711,10 +683,10 @@ ticks
 HORIZONTAL
 
 SLIDER
-885
-435
+915
+110
 1145
-468
+143
 DESIRED-POPULATION
 DESIRED-POPULATION
 500
@@ -724,6 +696,17 @@ DESIRED-POPULATION
 1
 NIL
 HORIZONTAL
+
+SWITCH
+625
+290
+832
+323
+HOMELESS-CAN-BUILD
+HOMELESS-CAN-BUILD
+1
+1
+-1000
 
 @#$#@#$#@
 ## WHAT IS IT?

@@ -1,19 +1,16 @@
 
-to-report calc_house_base_price [ house ]
-  let pr HOUSE-BASE-VALUE * SMI 
-  ;; apply ipc to a house
-  set pr pr + (pr * IPC * 0.01)
-  ;; apply an increment based on the distance to the city council
-  ;; 1 unit is 1% more expensive
-  set pr pr + (pr * 0.01 * [distance city-council] of house)
+to-report calc_seed_house_price [ house ]
+  ;; seed houses base price are calculated by the SMI * distance to the council of the couse
+  let pr SMI * distance [city-council] of house
+  ;; the base price could also be doubled
+  set pr pr + random pr
   report pr
 end
 
-to-report calc_seed_house_price [ house ]
-  let pr HOUSE-BASE-VALUE * SMI 
-  ;; apply ipc to a house
-  set pr pr + random pr
-  report pr
+
+to-report check_construction_prices [ _position ]
+  ;; TODO
+  report 0
 end
 
 
