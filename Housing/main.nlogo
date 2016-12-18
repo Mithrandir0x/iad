@@ -47,7 +47,7 @@ __includes[
   "mediator.nls"
   "plots-and-monitors.nls"
   "formulas.nls"
-  ]
+]
 
 
 
@@ -98,7 +98,7 @@ to setup
 end
 
 to go
-
+  swap_messages
 
   if ticks mod EARN-EACH = 0 [ humans_earn ]
   ;;if ticks mod LOSE-EACH = 0 [ humans_lose ]
@@ -312,13 +312,12 @@ end
 to-report message_get_content [ msg ]
   report item 3 msg
 end
-
 @#$#@#$#@
 GRAPHICS-WINDOW
 16
 10
-524
-539
+523
+538
 40
 40
 6.15
@@ -753,7 +752,7 @@ SWITCH
 323
 HOMELESS-CAN-BUILD
 HOMELESS-CAN-BUILD
-1
+0
 1
 -1000
 

@@ -123,7 +123,7 @@ end
 
 
 to-report buyable_houses
-  report min-one-of ( houses in-radius 5 with [owner != nobody and calc_buyable_base_price < [money] of myself] ) [ calc_buyable_base_price ]
+  report min-one-of ( houses in-radius 5 with [owner != nobody and base-price < [money] of myself] ) [ base-price ]
 end
 
 
