@@ -44,18 +44,27 @@ to initialize_house_of [ council the-patch the-owner]
   set city-council council
   set base-price calc_house_base_price self
   ask patch-here [ set free false]
+
 end
 
 
 to initialize_seed_house_of [ council the-patch the-owner]
   setxy [pxcor] of the-patch [pycor] of the-patch
   set shape "house"
-  set color red
   set owner the-owner
   set empty true
   set city-council council
   set base-price calc_seed_house_price self
   ask patch-here [ set free false]
+  
+  if owner != nobody[
+    set empty false
+    ;; changes made in the owner of this house
+    ask owner [ 
+      set num-houses num-houses + 1 
+      set base-home myself
+    ]
+  ]
 end
 
 

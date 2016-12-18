@@ -9,7 +9,7 @@ globals[
   BAD-LUCK-EACH
   GOOD-LUCK-EACH
   LIFE-TO-PROCREATE
-  ;; RADIUS ;; precio de casa, casas alrededor
+  RADIUS ;; precio de casa, casas alrededor
 
   ;; MONITORS
   MONITOR-MAX-SAVINGS
@@ -50,12 +50,14 @@ to setup
   set LOSE-EACH 10
   set BAD-LUCK-EACH 100
   set GOOD-LUCK-EACH 20
+  set RADIUS 5
 
   ;; initialize all patches to be free for edification
   ask patches [
     set free true
     set pcolor grey
   ]
+
 
   create-councils INIT-CITY-COUNCILS[
     set shape "pentagon"
@@ -67,7 +69,7 @@ to setup
 
 
 
-  create-humans INIT-HUMANS [
+  create-humans MIN-POPULATION [
     initialize_human
   ]
 
@@ -75,9 +77,13 @@ to setup
    ;;; estas casas se asignan a los siguientes humanos aleatorios
   create-houses INIT-HOUSES [
     ask patch-here [ set free false ]
-    initialize_seed_house_of one-of councils one-of patches with [free] nobody
+    initialize_seed_house_of one-of councils one-of patches with [free] one-of humans with [num-houses < MAX-HOUSES-IN-PROPERTY]
   ]
 
+
+  ;; updates shapes
+  update_all_humans
+  update_all_houses
 
 
   setup_lists
@@ -108,6 +114,7 @@ to go
 
 
   kill_humans
+  population_control
   update_monitors
   tick
 end
@@ -187,16 +194,36 @@ to humans_build
   ]
 end
 
+to population_control
+  if count humans < MIN-POPULATION [
+    show (word "Creating humans")
+      create-humans 0.5 * MIN-POPULATION [
+        initialize_human
+      ]
+  ]
+  if count humans > MAX-POPULATION [
+    show (word "Killing  humans")
+    let _humans sort n-of (0.25 * count humans) humans
+    foreach _humans [ kill_human ?]
+  ]
+
+end
+
+
 to humans_procreate
-  let able-to-procreate sort-on [money] humans with [ life = LIFE-TO-PROCREATE ]
+  let able-to-procreate sort-on [money] humans with [ life < LIFE-TO-PROCREATE and can-procreate]
   foreach able-to-procreate[
+
     if HOMELES-CAN-PROCREATE or [num-houses > 0] of ?
     [
-      create-humans 1 + random 3[
+      create-humans random 2[
         initialize_son ?
       ]
       ;; father loses 25% of money
-      ask ? [ set money 0.75 * money]
+      ask ? [
+        set money 0.75 * money
+        set can-procreate false
+        ]
     ]
   ]
 end
@@ -204,14 +231,47 @@ end
 
 
 to kill_humans
-  ask humans with [life < 0][
-    ask houses with [owner =  myself][
-      set empty true
-      set owner nobody
-      set color orange
+  let _humans sort humans with [life < 0]
+  foreach _humans
+  [
+    kill_human ?
+  ]
+
+end
+
+to kill_human [ _human ]
+  ask _human[
+    let sons humans with [father = myself]
+
+    ifelse any? sons
+    [
+      ;; give money to one son
+      ask one-of sons [ set money money + [money] of myself ]
+
+      ;; give houses randomly
+      ask houses with [owner = myself]
+      [
+        set owner one-of sons
+
       ]
+    ]
+    ;; destroy properties
+    [
+       ask houses with [owner =  myself][ die]
+    ]
     die
   ]
+end
+
+to update_all_humans
+  ask humans [
+    human_update_color
+    update_shape
+  ]
+end
+
+to update_all_houses
+ ask houses[ house_update_colors ]
 end
 
 
@@ -246,16 +306,15 @@ to-report message_get_content [ msg ]
 end
 
 
-
 @#$#@#$#@
 GRAPHICS-WINDOW
 16
 10
-455
-470
-16
-16
-13.0
+524
+539
+40
+40
+6.15
 1
 10
 1
@@ -265,10 +324,10 @@ GRAPHICS-WINDOW
 1
 1
 1
--16
-16
--16
-16
+-40
+40
+-40
+40
 1
 1
 1
@@ -308,15 +367,15 @@ SMI
 HORIZONTAL
 
 SLIDER
-629
-152
-801
-185
-INIT-HUMANS
-INIT-HUMANS
+625
+435
+870
+468
+MIN-POPULATION
+MIN-POPULATION
 1
 50
-23
+50
 1
 1
 NIL
@@ -371,9 +430,9 @@ NIL
 
 PLOT
 15
-479
+555
 456
-704
+780
 Savings
 NIL
 NIL
@@ -398,7 +457,7 @@ MAX-HOUSES-IN-PROPERTY
 MAX-HOUSES-IN-PROPERTY
 1
 5
-2
+1
 1
 1
 NIL
@@ -406,9 +465,9 @@ HORIZONTAL
 
 PLOT
 18
-723
+799
 457
-929
+1005
 Home posession
 NIL
 NIL
@@ -427,9 +486,9 @@ PENS
 
 PLOT
 556
-479
+555
 1036
-707
+783
 Houses
 NIL
 NIL
@@ -447,9 +506,9 @@ PENS
 
 PLOT
 554
-724
+800
 1029
-912
+988
 Population
 NIL
 NIL
@@ -464,6 +523,7 @@ PENS
 "elders" 1.0 0 -955883 true "" "plot count humans with [ life < 300 ]"
 "adult" 1.0 0 -13840069 true "" "plot count humans with [ life >= 300 and life < 750 ]"
 "young" 1.0 0 -7500403 true "" "plot count humans with [ life >= 750 ]"
+"total" 1.0 0 -16777216 true "" "plot count humans"
 
 SWITCH
 628
@@ -472,7 +532,7 @@ SWITCH
 379
 HOMELES-CAN-PROCREATE
 HOMELES-CAN-PROCREATE
-1
+0
 1
 -1000
 
@@ -508,9 +568,9 @@ HORIZONTAL
 
 MONITOR
 463
-479
+555
 540
-524
+600
 max
 MONITOR-MAX-SAVINGS
 0
@@ -519,9 +579,9 @@ MONITOR-MAX-SAVINGS
 
 MONITOR
 463
-529
+605
 540
-574
+650
 mean
 MONITOR-MEAN-SAVINGS
 0
@@ -530,9 +590,9 @@ MONITOR-MEAN-SAVINGS
 
 MONITOR
 463
-579
+655
 539
-624
+700
 median
 MONITOR-MEDIAN-SAVINGS
 0
@@ -556,9 +616,9 @@ HORIZONTAL
 
 MONITOR
 460
-722
+798
 538
-767
+843
 homeless
 MONITOR-HOMELESs
 0
@@ -567,9 +627,9 @@ MONITOR-HOMELESs
 
 MONITOR
 461
-771
+847
 537
-816
+892
 1 house
 MONITOR-ONE-HOUSE
 0
@@ -578,9 +638,9 @@ MONITOR-ONE-HOUSE
 
 MONITOR
 462
-819
+895
 536
-864
+940
 2 houses
 MONITOR-TWO-HOUSES
 0
@@ -589,9 +649,9 @@ MONITOR-TWO-HOUSES
 
 MONITOR
 462
-869
+945
 539
-914
+990
 + houses
 MONITOR-MORE-HOUSES
 0
@@ -600,9 +660,9 @@ MONITOR-MORE-HOUSES
 
 MONITOR
 1041
-479
+555
 1120
-524
+600
 empty
 MONITOR-EMPTY-HOUSES
 17
@@ -611,9 +671,9 @@ MONITOR-EMPTY-HOUSES
 
 MONITOR
 1041
-531
+607
 1120
-576
+652
 free
 MONITOR-FREE-HOUSES
 0
@@ -622,9 +682,9 @@ MONITOR-FREE-HOUSES
 
 MONITOR
 1042
-583
+659
 1121
-628
+704
 not empty
 MONITOR-NOT-EMPTY-HOUSES
 17
@@ -632,9 +692,9 @@ MONITOR-NOT-EMPTY-HOUSES
 11
 
 MONITOR
-461
+550
 10
-529
+618
 55
 houses
 count houses
@@ -643,9 +703,9 @@ count houses
 11
 
 MONITOR
-462
+551
 64
-528
+617
 109
 humans
 count humans
@@ -669,9 +729,9 @@ IPC
 HORIZONTAL
 
 MONITOR
-463
+552
 151
-520
+609
 196
 built
 MONITOR-HOUSES-BUILT
@@ -680,9 +740,9 @@ MONITOR-HOUSES-BUILT
 11
 
 MONITOR
-464
+553
 204
-522
+611
 249
 bought
 MONITOR-HOUSES-BOUGHT
@@ -699,10 +759,25 @@ HOMELESS-LIFE-EXPECTANCY
 HOMELESS-LIFE-EXPECTANCY
 -10
 -1
--10
+-3
 1
 1
 ticks
+HORIZONTAL
+
+SLIDER
+885
+435
+1145
+468
+MAX-POPULATION
+MAX-POPULATION
+500
+1000
+751
+1
+1
+NIL
 HORIZONTAL
 
 @#$#@#$#@
@@ -732,34 +807,13 @@ HOUSING (a general understanding of what the model is trying to show or explain)
 
 * Un humano solo puede vivir en una casa al mismo tiempo, si posee mas estas no estaran ocupadas
 
-* un humano pierde dinero cada 10 ticks entre 0 y 10% del dinero.
+* Un humano tiene un padre o nobody
 
-* un humano pierde dinero cada 100 ticks entre 0 y 20% del dinero
+* Cuando un humano muere las pertenencias pasan al hijo
 
-* un humano pierde dinero cada 300 ticks entre 0 y 90% del dinero si tiene dinero por debajo de la media, entre 0 y 30% si tiene dinero por encima de la media
-
-* un humano puede construir una casa siempre que cumpla la norma del slider y pueda permitirse pagar 50 veces el SMI, pero pagará 25 veces el SMI para construirla.
-
-
-
-*
 
 ### Casas
 
-* Una casa tiene un coste base de 20 veces el SMI ( este coste es base, se fija la primera vez y no se toca) y variables ( se actualizan al iniciar la negociacion ) :
-
-    * \+ 50%/d donde de es la distancia de casa respecto al centro
-
-    * \+ 0.2% que se lleva el vendedor
-
-    * \-15% si tiene menos de 3 casas vecinas,
-
-    * \+ 5% por cada casa vecina que este ocupada ocupadas, a partir de 3 casas vecinas
-
-* El coste base de una casa se actualiza cada vez que 3 generaciones, o inquilinos hayan pasado por una casa.¿?¿?
-
-
-* Una casa puede estar vacia, u ocupada si el dueño vive en ella
 
 
 ### Ofertas

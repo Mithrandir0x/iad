@@ -1,15 +1,16 @@
 breed[ humans human ]
 
 humans-own[
-  life
-  money
-  num-houses
-  can-build
-  social-status
-  ;; father nobody
-  ;; eloquence random 50
-  ;; expertise 0
-  
+  life ;;
+  money ;;
+  base-home ;; the house in which human lives
+  num-houses ;; total amount of houses
+  can-build ;; if the human can build, deprecated
+  social-status ;; the social status
+  father ;; the father
+  eloquence
+  expertise
+  can-procreate
   current-messages
   next-messages
 ]
@@ -23,12 +24,15 @@ to initialize_human
   set social-status 1 + random SOCIAL-STATUSES
   set money (SMI * random 100) * social-status
   set life (random 500) + 500
-
-  set current-messages []
-  set next-messages []
+  set eloquence random 50
+  set expertise 0
+  set father nobody
+  set base-home nobody
+  set can-procreate true
 end
 
-to initialize_son [father]
+to initialize_son [_father]
+  set father _father
   set shape "face neutral"
   set color yellow
   setxy [xcor] of father [ycor] of father
@@ -36,16 +40,13 @@ to initialize_son [father]
   set social-status [social-status] of father
   set money 0.25 * [money] of father
   set life (random 500) + 500
-
-  set current-messages []
-  set next-messages []
+  set eloquence random 50
+  set expertise 0
+  set base-home nobody
+  set can-procreate true
 end
 
 to human_behave
-  if length current-messages > 0 [
-    evaluate_accept_offers
-    evaluate_rfqs
-  ]
   
   ifelse ticks mod 2 = 0
   ;; this is a fix to avoid building and buiying on the same tick
@@ -53,7 +54,7 @@ to human_behave
   ;; both are produced avoiding the rule MAX-HOUSES-IN-PROPERTY
   [
     if MAX-HOUSES-IN-PROPERTY > num-houses [
-      buy_houses
+  ;;    buy_houses
     ]
   ]
   [
@@ -70,6 +71,7 @@ to human_behave
   walk
 end
 
+
 to walk
   if money > 0
   [
@@ -84,7 +86,6 @@ to walk
     ]
   ]
 end
-
 
 
 to human_update_color
@@ -115,9 +116,11 @@ to-report affordable_houses
   report one-of houses in-radius 5 with [owner = nobody and base-price < [money] of myself]
 end
 
+
 to-report buyable_houses
   report houses in-radius 5 with [owner != nobody and calc_buyable_base_price < [money] of myself]
 end
+
 
 to buy_houses
   let affordable affordable_houses
@@ -139,6 +142,7 @@ to buy_houses
   ]
 end
 
+
 to do_buy_house [ affordable ]
   set MONITOR-HOUSES-BOUGHT MONITOR-HOUSES-BOUGHT + 1
   show (word self " buys " affordable " at " [patch-here] of affordable " for " [base-price] of affordable " €")
@@ -157,6 +161,7 @@ to do_buy_house [ affordable ]
   set money money - [base-price] of affordable
   set num-houses num-houses +  1
 end
+
 
 to evaluate_rfqs
   let rfq-messages filter [ message_get_kind ? = "RFQ" ] current-messages
@@ -179,6 +184,7 @@ to evaluate_accept_offers
     do_buy_house (item 0 (message_get_content accepted-offer))
   ]
 end
+
 
 to build_houses
   let pr-required calc_money_build_house
