@@ -39,7 +39,7 @@ to-report check_construction_prices
     ]
   ]
 
-  report base_vacias + base_ocupadas
+  report (base_vacias + base_ocupadas)
 end
 
 
