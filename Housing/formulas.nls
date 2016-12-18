@@ -8,9 +8,38 @@ to-report calc_seed_house_price [ house ]
 end
 
 
-to-report check_construction_prices [ _position ]
-  ;; TODO
-  report 0
+to-report check_construction_prices
+  let base_vacias 0
+  let base_ocupadas 0
+  
+  let houses-in-radius houses in-radius RADIUS
+  let not-empty-houses houses-in-radius with [not empty]
+  let empty-houses houses-in-radius with [empty]
+
+  ifelse count empty-houses > count not-empty-houses
+  [ ;; there are more empty houses
+    ifelse any? not-empty-houses
+    [
+      set base_vacias 0.6 * mean [base-price] of empty-houses
+      set base_ocupadas 0.4 * mean [base-price] of not-empty-houses
+    ]
+    [
+      set base_vacias mean[base-price] of empty-houses
+    ]
+  ]
+  [
+    ;; there are more not empty houses or at least the same
+    ifelse any? empty-houses
+    [
+      set base_vacias 0.4 * mean [base-price] of empty-houses
+      set base_ocupadas 0.6 * mean [base-price] of not-empty-houses
+    ]
+    [
+      set base_ocupadas mean [base-price] of not-empty-houses
+    ]
+  ]
+
+  report base_vacias + base_ocupadas
 end
 
 

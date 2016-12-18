@@ -70,9 +70,10 @@ to human_behave
   
   if num-houses > 0 or HOMELESS-CAN-BUILD
   [
-    if any? houses in-radius RADIUS and any? patches in-radius RADIUS with [free]
+    if any? houses in-radius RADIUS and [free] of patch-here
     [
-      let needed check_construction_prices patch-here
+      let needed check_construction_prices
+      if money > needed [ mediator_add_construction patch-here self needed ]
     ]
   ]
   

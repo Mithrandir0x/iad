@@ -10,7 +10,6 @@ globals[
   GOOD-LUCK-EACH
   LIFE-TO-PROCREATE
   RADIUS ;; precio de casa, casas alrededor
-  TRACE
 
   ;; MONITORS
   MONITOR-MAX-SAVINGS
@@ -50,7 +49,6 @@ __includes[
 
 to setup
   clear-all
-  set TRACE true
   set LIFE-TO-PROCREATE 450
   set EARN-EACH 10
   set LOSE-EACH 10
@@ -167,6 +165,8 @@ to population_control
   ;; kills elders
   kill_humans
 
+
+  ;;; EXTREME CASES
   if count humans < MIN-POPULATION [
     if trace[show (word "Creating humans")]
       create-humans 0.5 * MIN-POPULATION [
@@ -676,7 +676,7 @@ HOMELESS-LIFE-EXPECTANCY
 HOMELESS-LIFE-EXPECTANCY
 -10
 -1
--3
+-10
 1
 1
 ticks
@@ -705,6 +705,17 @@ SWITCH
 HOMELESS-CAN-BUILD
 HOMELESS-CAN-BUILD
 1
+1
+-1000
+
+SWITCH
+625
+335
+728
+368
+TRACE
+TRACE
+0
 1
 -1000
 
