@@ -36,6 +36,9 @@ globals[
   ;; MEDIATOR
   MEDIATOR-OFFERS
   MEDIATOR-CONSTRUCTIONS
+
+  OBS-CURRENT-MESSAGES
+  OBS-NEXT-MESSAGES
 ]
 
 __includes[
@@ -44,7 +47,7 @@ __includes[
   "mediator.nls"
   "plots-and-monitors.nls"
   "formulas.nls"
-  ]
+]
 
 
 
@@ -95,7 +98,7 @@ to setup
 end
 
 to go
-
+  swap_messages
 
   if ticks mod EARN-EACH = 0 [ humans_earn ]
   ;;if ticks mod LOSE-EACH = 0 [ humans_lose ]
@@ -182,6 +185,25 @@ to population_control
 
 end
 
+to humans_resolve_negotiations
+  let messages filter [ message_get_kind ? = "RFQ" ] OBS-CURRENT-MESSAGES
+  foreach messages [
+    let buyer ( message_get_sender ? )
+    let seller ( message_get_recipient ? )
+    let price item 1 ( message_get_content ? )
+    let negotiated-house item 0 ( message_get_content ? )
+
+    if calc_negotiation_score buyer < calc_negotiation_score seller [
+      set price calc_house_seller_price negotiated-house
+    ]
+
+    if [ price < money ] of buyer [
+      ask negotiated-house [ set base-price price ]
+      do_buy_house negotiated-house
+    ]
+  ]
+end
+
 
 to humans_procreate
   let able-to-procreate sort-on [money] humans with [ life < LIFE-TO-PROCREATE and can-procreate]
@@ -263,13 +285,39 @@ to update_all_houses
  ask houses[ house_update_colors ]
 end
 
+to swap_messages
+  set OBS-CURRENT-MESSAGES OBS-NEXT-MESSAGES
+  set OBS-NEXT-MESSAGES []
+end
 
+
+
+to send_message [ recipient sender kind message ]
+  print (word recipient " recieves [" kind "] message witch content [" message "] from [" sender "]" )
+  set OBS-NEXT-MESSAGES lput (list sender recipient kind message) OBS-NEXT-MESSAGES
+end
+
+to-report message_get_sender [ msg ]
+  report item 0 msg
+end
+
+to-report message_get_recipient [ msg ]
+  report item 1 msg
+end
+
+to-report message_get_kind [ msg ]
+  report item 2 msg
+end
+
+to-report message_get_content [ msg ]
+  report item 3 msg
+end
 @#$#@#$#@
 GRAPHICS-WINDOW
 16
 10
-524
-539
+523
+538
 40
 40
 6.15
@@ -704,7 +752,7 @@ SWITCH
 323
 HOMELESS-CAN-BUILD
 HOMELESS-CAN-BUILD
-1
+0
 1
 -1000
 

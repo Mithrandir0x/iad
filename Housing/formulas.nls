@@ -25,6 +25,25 @@ to-report calc_owned_house_rfq_price [ recipient house ]
   report house-base-price + ( ( house-base-price * 0.1 ) * ( [ social-status ] of recipient / SOCIAL-STATUSES ) )
 end
 
+to-report calc_house_offer_price [ house ]
+  let house-base-price [ base-price ] of house
+  report house-base-price - ( calc_differential_price house )
+end
+
+to-report calc_house_seller_price [ house ]
+  let house-base-price [ base-price ] of house
+  report house-base-price + ( calc_differential_price house )
+end
+
+to-report calc_differential_price [ house ]
+  let house-base-price [ base-price ] of house
+  report ( 0.25 * ( house-base-price - min [ base-price ] of houses in-radius 5 ) / ( social-status + 1 ) )
+end
+
+to-report calc_negotiation_score [ human ]
+  report [ eloquence + expertise ] of human
+end
+
 to-report calc_money_build_house
   let price -1
   if any? houses in-radius 10 [
