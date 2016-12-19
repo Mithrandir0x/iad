@@ -136,7 +136,10 @@ end
 
 to-report buyable_houses
   ;; returns the cheapest house around
-  report min-one-of ( houses in-radius RADIUS with [owner != nobody and base-price < [money] of myself] ) [ base-price ]
+  let _houses  houses in-radius RADIUS with [owner != nobody and base-price < [money] of myself]
+  if any? _houses [ report min-one-of _houses [base-price] ]
+  report nobody
+  ;;report min-one-of ( houses in-radius RADIUS with [owner != nobody and base-price < [money] of myself] ) [ base-price ]
 end
 
 to buy_houses
