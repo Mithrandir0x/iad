@@ -10,7 +10,6 @@ globals[
   GOOD-LUCK-EACH
   LIFE-TO-PROCREATE
   RADIUS ;; precio de casa, casas alrededor
-  TRACE
 
   ;; MONITORS
   MONITOR-MAX-SAVINGS
