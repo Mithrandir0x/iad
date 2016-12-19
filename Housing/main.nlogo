@@ -29,6 +29,13 @@ globals[
   MONITOR-HOUSES-BUILT
   MONITOR-HOUSES-BOUGHT
 
+  MONITOR-MAX-EMTPY
+  MONITOR-MAX-NOT-EMTPY
+  MONITOR-MEAN-EMTPY
+  MONITOR-MEAN-NOT-EMPTY
+  MONITOR-MIN-EMPTY
+  MONITOR-MIN-NOT-EMPTY
+
   ;; LISTS
   LIST-CONSTRUCTION-PRICES
   LIST-BUYING-PRICES
@@ -47,7 +54,7 @@ __includes[
   "mediator.nls"
   "plots-and-monitors.nls"
   "formulas.nls"
-]
+  ]
 
 
 
@@ -93,6 +100,7 @@ to setup
 
   setup_lists
   reset-ticks
+  setup_mediator
   setup_monitors
   update_monitors
 end
@@ -116,7 +124,7 @@ to go
 
   ;;if (count humans with [ can-build ]) > 0 [ humans_build ]
 
-
+  mediator_behave
 
   population_control
 
@@ -170,6 +178,8 @@ to population_control
   ;; kills elders
   kill_humans
 
+
+  ;;; EXTREME CASES
   if count humans < MIN-POPULATION [
     if trace[show (word "Creating humans")]
       create-humans 0.5 * MIN-POPULATION [
@@ -223,7 +233,7 @@ to humans_procreate
     ]
     let sons random max-sons
 
-    if trace [ show (word ? " has " sons " sons") ]
+    if trace and sons > 0 [ show (word ? " has " sons " sons") ]
 
     create-humans sons[
       initialize_son ?
@@ -251,7 +261,7 @@ to kill_human [ _human ]
   ask _human[
     let sons humans with [father = myself]
 
-    ifelse any? sons
+    if any? sons
     [
       ;; give money to one son
       ask one-of sons [ set money money + [money] of myself ]
@@ -259,17 +269,31 @@ to kill_human [ _human ]
       ;; give houses randomly
       ask houses with [owner = myself]
       [
-        set owner one-of sons
-        ;; TODO
-        ;; check if the son is homeless to add the house as a main house
+        let heritage self
+        let lucky-son one-of sons with [num-houses < MAX-HOUSES-IN-PROPERTY]
+        ;; if there is nobody, this house will be removed at the end of the procedure
+        ;; ugly though
+        if lucky-son != nobody[
+          set owner lucky-son
+          if trace [ show (word myself " dies and gives " self " to " lucky-son )]
 
+          ;; checks if the son is homeless to add the house as a main house
+          ifelse [base-home = nobody] of lucky-son [
+            if trace [ show (word lucky-son " was homeless but not anymore, " heritage " is its new home ")]
+            ask lucky-son[ set base-home heritage]
+            set empty false
+          ]
+          [
+            set empty true
+          ]
+        ]
       ]
     ]
-    ;; destroy properties
-    [
 
-       ask houses with [owner =  myself][die]
-    ]
+    ;; destroy rest of properties
+
+    ask houses with [owner =  myself][die]
+
     die
   ]
 end
@@ -316,8 +340,8 @@ end
 GRAPHICS-WINDOW
 16
 10
-523
-538
+524
+539
 40
 40
 6.15
@@ -396,7 +420,7 @@ INIT-HOUSES
 INIT-HOUSES
 0
 50
-50
+15
 1
 1
 NIL
@@ -435,10 +459,10 @@ NIL
 1
 
 PLOT
-15
-555
-456
-780
+1045
+800
+1345
+1010
 Savings
 NIL
 NIL
@@ -463,7 +487,7 @@ MAX-HOUSES-IN-PROPERTY
 MAX-HOUSES-IN-PROPERTY
 1
 20
-1
+10
 1
 1
 NIL
@@ -509,12 +533,13 @@ PENS
 "empty" 1.0 0 -2674135 true "" "plot MONITOR-EMPTY-HOUSES"
 "free" 1.0 0 -955883 true "" "plot MONITOR-FREE-HOUSES"
 "not empty" 1.0 0 -13840069 true "" "plot MONITOR-NOT-EMPTY-HOUSES"
+"total" 1.0 0 -16777216 true "" "plot count houses"
 
 PLOT
 554
 800
 1029
-988
+1005
 Population
 NIL
 NIL
@@ -547,10 +572,10 @@ NIL
 HORIZONTAL
 
 MONITOR
-463
-555
-540
-600
+1357
+800
+1434
+845
 max
 MONITOR-MAX-SAVINGS
 0
@@ -558,10 +583,10 @@ MONITOR-MAX-SAVINGS
 11
 
 MONITOR
-463
-605
-540
-650
+1357
+850
+1434
+895
 mean
 MONITOR-MEAN-SAVINGS
 0
@@ -569,10 +594,10 @@ MONITOR-MEAN-SAVINGS
 11
 
 MONITOR
-463
-655
-539
-700
+1357
+900
+1433
+945
 median
 MONITOR-MEDIAN-SAVINGS
 0
@@ -657,11 +682,11 @@ MONITOR-NOT-EMPTY-HOUSES
 11
 
 MONITOR
-550
-10
-618
-55
-houses
+1040
+710
+1107
+755
+total
 count houses
 0
 1
@@ -724,7 +749,7 @@ HOMELESS-LIFE-EXPECTANCY
 HOMELESS-LIFE-EXPECTANCY
 -10
 -1
--3
+-10
 1
 1
 ticks
@@ -755,6 +780,40 @@ HOMELESS-CAN-BUILD
 0
 1
 -1000
+
+SWITCH
+625
+335
+728
+368
+TRACE
+TRACE
+0
+1
+-1000
+
+PLOT
+20
+550
+535
+785
+Prices
+NIL
+NIL
+0.0
+10.0
+0.0
+10.0
+true
+true
+"" ""
+PENS
+"max-empty" 1.0 0 -2674135 true "" "plot MONITOR-MAX-EMTPY"
+"max-not-empty" 1.0 0 -13840069 true "" "plot MONITOR-MAX-NOT-EMTPY"
+"mean-empty" 1.0 0 -955883 true "" "plot MONITOR-MEAN-EMTPY"
+"mean-not-empty" 1.0 0 -13791810 true "" "plot MONITOR-MEAN-NOT-EMPTY"
+"min-empty" 1.0 0 -9276814 true "" "plot MONITOR-MIN-EMPTY"
+"min-not-empty" 1.0 0 -5825686 true "" "plot MONITOR-MIN-NOT-EMPTY"
 
 @#$#@#$#@
 ## WHAT IS IT?
