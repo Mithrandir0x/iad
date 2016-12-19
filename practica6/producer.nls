@@ -6,9 +6,9 @@ producers-own [
   product-difficulty-table
   product-in-process
   stash
-  
   product-selection-strategy
-  
+  energy
+
   current-messages
   next-messages
 ]
@@ -25,14 +25,23 @@ to Initialize-product-selection-strategy-table
 end
 
 to producer-run
-  producer-produce-product
+  ifelse not empty? current-messages
+  [
+    process_rfqs
+  ]
+  [
+    producer-produce-product
+  ]
+  set energy energy - 1  
 end
 
 to producer-produce-product
   let selected-product-id select-product
+
   if selected-product-id != -1 [
-    let quantity produce-product selected-product-id
-    stash-product selected-product-id quantity
+    set product-in-process selected-product-id
+    ;;let quantity produce-product selected-product-id
+    stash-product selected-product-id produce-product selected-product-id
   ]
 end
 
@@ -76,6 +85,24 @@ to-report get-product-quantity [product-id]
   ]
 end
 
+to process_rfqs
+  foreach current-messages[ ;; sender kind (template-product-id quantity)
+    if item 1 ? = "RFQ" and product-in-process = item 0  item 2 ?
+    [ 
+     send_offer item 0 ? (create_offer item 0  item 2 ?)
+    ]
+  ]
+end
+
+to-report create_offer[tp-id ]
+  ;; rfq : product unit-price quantity
+  report (list tp-id (calc_unit_price tp-id) (get-product-quantity tp-id))
+end
+
+to send_offer [ recipient message ]
+  send_message recipient self "OFFER" message
+end
+
 ;; Product Selection Strategies
 
 to-report select-product
@@ -114,4 +141,9 @@ to-report select-most-abundant-product
     units-per-tick
   ]
   report best-product
+end
+
+to-report calc_unit_price[ tp-id ] 
+  let _price (get-difficulty tp-id) * (get_product_units_per_tick tp-id)
+  report _price / (get-product-quantity tp-id)
 end

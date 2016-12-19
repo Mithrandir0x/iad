@@ -16,6 +16,7 @@ to initialize-world [markets-to-load products-to-load producers-to-load]
         set influence-radius item 2 ?1
         set market-day-tick item 3 ?1
         set shape "house"
+        set next-messages []
       ]
     ]
     foreach products-to-load [
@@ -35,7 +36,8 @@ to initialize-world [markets-to-load products-to-load producers-to-load]
         set product-selection-strategy item 3 ?1
         set product-difficulty-table get-difficulty-table item 4 ?1
         set shape "person"
-        
+        set energy 50 + (random 50)
+        set next-messages[]
         initialize-producer
       ]
     ]

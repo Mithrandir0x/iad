@@ -1,6 +1,13 @@
 extensions[csv array table]
 
-__includes["world.nls" "template_product.nls" "market.nls" "product.nls" "producer.nls" "mediator.nls" "unitests.nls"]
+__includes[
+  "world.nls"
+  "template_product.nls"
+  "market.nls"
+  "product.nls"
+  "producer.nls"
+  "unitests.nls"
+  ]
 
 to setup
   ifelse length world-csv-file > 0 [
@@ -11,11 +18,47 @@ to setup
   reset-ticks
 end
 
+
 to go
-  tick
+  swap_messages
+  ask markets [ market-run ]
 
   ask producers [ producer-run ]
-  ask markets [ market-run ]
+
+  kill_agents_without_energy
+  tick
+end
+
+
+
+to swap_messages
+  ask markets [
+    set current-messages next-messages
+    set next-messages []
+  ]
+
+  ask producers [
+    set current-messages next-messages
+    set next-messages []
+  ]
+end
+
+
+
+to send_message [recipient sender kind message]
+  ask recipient [
+    ;; sender, kind, message
+    print (word recipient " recieves " kind " message witch content " message " from " sender )
+    set next-messages lput (list sender kind message) next-messages
+
+  ]
+end
+
+to kill_agents_without_energy
+  ask producers with [ energy < 0 ]
+  [
+    die
+  ]
 end
 @#$#@#$#@
 GRAPHICS-WINDOW
