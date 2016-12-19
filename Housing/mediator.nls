@@ -19,12 +19,14 @@ end
 
 to mediator_behave
   
+  ;; do OFFERS first
+  
   if not empty? MEDIATOR-CONSTRUCTIONS
   [
     mediator_build_constructions
   ]
-  
-  
+
+  ;; resets the lists
   setup_mediator
 end
 
@@ -40,6 +42,9 @@ to mediator_build_constructions
     if [num-houses < MAX-HOUSES-IN-PROPERTY] of _who and [free] of _patch
     [
 
+      ;; increases the monitor
+      monitor_new_house_built
+      
       ;; creates the house
       create-houses 1[
         ask _patch[ set free false ]
@@ -62,5 +67,4 @@ to mediator_build_constructions
     ]
 
   ]
-  
 end

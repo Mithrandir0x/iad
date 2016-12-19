@@ -59,13 +59,12 @@ __includes[
 
 to setup
   clear-all
-  set TRACE true
   set LIFE-TO-PROCREATE 450
   set EARN-EACH 10
   set LOSE-EACH 10
   set BAD-LUCK-EACH 100
   set GOOD-LUCK-EACH 20
-  set RADIUS 5
+  set RADIUS 3
 
   ;; initialize all patches to be free for edification
   ask patches [
@@ -458,10 +457,10 @@ NIL
 1
 
 PLOT
-1045
-800
-1345
-1010
+25
+1025
+455
+1235
 Savings
 NIL
 NIL
@@ -486,7 +485,7 @@ MAX-HOUSES-IN-PROPERTY
 MAX-HOUSES-IN-PROPERTY
 1
 20
-10
+3
 1
 1
 NIL
@@ -571,10 +570,10 @@ NIL
 HORIZONTAL
 
 MONITOR
-1357
-800
-1434
-845
+470
+1030
+547
+1075
 max
 MONITOR-MAX-SAVINGS
 0
@@ -582,10 +581,10 @@ MONITOR-MAX-SAVINGS
 11
 
 MONITOR
-1357
-850
-1434
-895
+470
+1080
+547
+1125
 mean
 MONITOR-MEAN-SAVINGS
 0
@@ -593,10 +592,10 @@ MONITOR-MEAN-SAVINGS
 11
 
 MONITOR
-1357
-900
-1433
-945
+470
+1130
+546
+1175
 median
 MONITOR-MEDIAN-SAVINGS
 0
@@ -692,10 +691,10 @@ count houses
 11
 
 MONITOR
-551
-64
-617
-109
+530
+10
+596
+55
 humans
 count humans
 0
@@ -718,10 +717,10 @@ IPC
 HORIZONTAL
 
 MONITOR
-552
-151
-609
-196
+1045
+1030
+1102
+1075
 built
 MONITOR-HOUSES-BUILT
 0
@@ -729,10 +728,10 @@ MONITOR-HOUSES-BUILT
 11
 
 MONITOR
-553
-204
-611
-249
+1045
+1085
+1103
+1130
 bought
 MONITOR-HOUSES-BOUGHT
 0
@@ -787,7 +786,7 @@ SWITCH
 368
 TRACE
 TRACE
-0
+1
 1
 -1000
 
@@ -813,6 +812,25 @@ PENS
 "mean-not-empty" 1.0 0 -13791810 true "" "plot MONITOR-MEAN-NOT-EMPTY"
 "min-empty" 1.0 0 -9276814 true "" "plot MONITOR-MIN-EMPTY"
 "min-not-empty" 1.0 0 -5825686 true "" "plot MONITOR-MIN-NOT-EMPTY"
+
+PLOT
+555
+1030
+1030
+1235
+Constructions / transactions
+NIL
+NIL
+0.0
+10.0
+0.0
+10.0
+true
+true
+"" ""
+PENS
+"built" 1.0 0 -2674135 true "" "plot MONITOR-HOUSES-BUILT"
+"bought" 1.0 0 -13791810 true "" "plot MONITOR-HOUSES-BOUGHT"
 
 @#$#@#$#@
 ## WHAT IS IT?
