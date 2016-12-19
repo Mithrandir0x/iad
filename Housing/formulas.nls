@@ -76,7 +76,7 @@ to-report calc_differential_price [ house ]
   ;; the maximum displacement of the price may be 0.25
   let base-differential 0.1 * house-base-price / SOCIAL-STATUSES
   ;; reports the differential based on the social status of the agent
-  report base-differential * (social-status + 1)
+  report base-differential * social-status
 end
 
 to-report calc_negotiation_score [ human ]

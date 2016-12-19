@@ -38,12 +38,12 @@ to initialize_son [_father]
   
   ;; the social status is based on father's social status
   ;; it can increase or decrease 1
-  ifelse [social-status = 0] of father
+  ifelse [social-status = 1] of father
   [ ;; social status may increase 1
     set social-status ([social-status] of father) + random 2
   ]
   [
-    ifelse [social-status = SOCIAL-STATUSES] of father
+    ifelse [social-status = SOCIAL-STATUSES + 1] of father
     [ ;; social status may decrease 1
       set social-status ([social-status] of father) - random 2
     ]
@@ -64,9 +64,6 @@ end
 
 to human_behave
   set life life - 1
-  
-  if num-houses = 0
-  [ set life life + HOMELESS-LIFE-EXPECTANCY  ]
   
   walk
   

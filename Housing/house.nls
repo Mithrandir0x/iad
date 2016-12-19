@@ -34,6 +34,11 @@ to house_update_price
   
   set base-price price
   
+  if count houses in-radius RADIUS = 1
+  [
+    ;; decreases the price if the house is alone
+    set base-price base-price * 0.999
+  ]
   ;;let _houses houses in-radius RADIUS
   ;;if any? _houses
   ;;  [

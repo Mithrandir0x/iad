@@ -2,6 +2,7 @@
 to setup_monitors
  set MONITOR-HOUSES-BUILT 0
  set MONITOR-HOUSES-BOUGHT 0
+ set MONITOR-HOMELESS-HOUSES-BOUGHT 0 
  
  ;; prices
  set MONITOR-MAX-EMTPY 0
@@ -53,10 +54,12 @@ end
 
 
 to monitor_new_house_built
+
   set MONITOR-HOUSES-BUILT MONITOR-HOUSES-BUILT + 1
 end
 
-to monitor_new_house_bought
+to monitor_new_house_bought [ homeless ]
+  if homeless [ set MONITOR-HOMELESS-HOUSES-BOUGHT MONITOR-HOMELESS-HOUSES-BOUGHT + 1 ]  
   set MONITOR-HOUSES-BOUGHT MONITOR-HOUSES-BOUGHT + 1
 end 
 

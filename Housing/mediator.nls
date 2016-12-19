@@ -126,7 +126,7 @@ end
 
 
 to finish_negotiation [ _house _buyer _seller ]
-  monitor_new_house_bought
+  monitor_new_house_bought [num-houses = 0] of _buyer
   if trace [ show (word "mediator negotiaton closed on " _house " between " _buyer " and " _seller " for " [base-price] of _house) ]
 
   ;; when is the buyer's unique house

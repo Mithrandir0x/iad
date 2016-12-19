@@ -27,6 +27,7 @@ globals[
 
   MONITOR-HOUSES-BUILT
   MONITOR-HOUSES-BOUGHT
+  MONITOR-HOMELESS-HOUSES-BOUGHT
 
   MONITOR-MAX-EMTPY
   MONITOR-MAX-NOT-EMTPY
@@ -138,13 +139,13 @@ end
 
 to humans_earn
   ask humans [
-    set money money + SMI * social-status
+    set money money + SMI *  social-status
   ]
 end
 
 to humans_lose
   ask humans [
-    set money money - (SMI * 0.1 * (5 + random 5))
+    set money money - (SMI * 0.1 * (1 + random 5))
   ]
 end
 
@@ -273,17 +274,15 @@ to kill_human [ _human ]
     ]
 
     ;; destroy rest of properties
-
+    if trace [ show (word "DESTROYING " count houses with [ owner = myself ] " houses ")]
     ask houses with [owner =  myself][
-      die
       ask patch-here [
         if not free[
           if trace [ show (word "Setting soil free")]
           set free true
         ]
-
-
       ]
+      die
     ]
 
     die
@@ -304,11 +303,11 @@ end
 GRAPHICS-WINDOW
 16
 10
-519
-534
-30
-30
-8.082
+510
+525
+20
+20
+11.805
 1
 10
 1
@@ -318,10 +317,10 @@ GRAPHICS-WINDOW
 1
 1
 1
--30
-30
--30
-30
+-20
+20
+-20
+20
 1
 1
 1
@@ -354,7 +353,7 @@ SMI
 SMI
 1
 1500
-1500
+992
 1
 1
 €
@@ -383,8 +382,8 @@ SLIDER
 INIT-HOUSES
 INIT-HOUSES
 0
-50
-20
+100
+25
 1
 1
 NIL
@@ -438,7 +437,7 @@ true
 true
 "plot 0" ""
 PENS
-"max" 1.0 0 -2674135 true "" "plot MONITOR-MAX-SAVINGS"
+"max" 1.0 0 -2674135 true "" "plot 0;;MONITOR-MAX-SAVINGS"
 "mean" 1.0 0 -955883 true "" "plot MONITOR-MEAN-SAVINGS"
 "median" 1.0 0 -13840069 true "" "plot MONITOR-MEDIAN-SAVINGS"
 
@@ -451,7 +450,7 @@ MAX-HOUSES-IN-PROPERTY
 MAX-HOUSES-IN-PROPERTY
 1
 20
-4
+5
 1
 1
 NIL
@@ -523,9 +522,9 @@ PENS
 
 SLIDER
 875
-240
+200
 1145
-273
+233
 SOCIAL-STATUSES
 SOCIAL-STATUSES
 2
@@ -677,7 +676,7 @@ IPC
 IPC
 1
 100
-50
+3
 1
 1
 %
@@ -706,30 +705,15 @@ MONITOR-HOUSES-BOUGHT
 11
 
 SLIDER
-845
-195
-1145
-228
-HOMELESS-LIFE-EXPECTANCY
-HOMELESS-LIFE-EXPECTANCY
--10
--1
--1
-1
-1
-ticks
-HORIZONTAL
-
-SLIDER
 875
 110
 1145
 143
 DESIRED-POPULATION
 DESIRED-POPULATION
-500
+100
 1000
-500
+312
 1
 1
 NIL
@@ -742,7 +726,7 @@ SWITCH
 363
 HOMELESS-CAN-BUILD
 HOMELESS-CAN-BUILD
-1
+0
 1
 -1000
 
@@ -798,16 +782,17 @@ true
 PENS
 "built" 1.0 0 -2674135 true "" "plot MONITOR-HOUSES-BUILT"
 "bought" 1.0 0 -13791810 true "" "plot MONITOR-HOUSES-BOUGHT"
+"h bought" 1.0 0 -13840069 true "" "plot MONITOR-HOMELESS-HOUSES-BOUGHT"
 
 CHOOSER
 875
-285
+245
 1145
-330
+290
 UPDATE-HOUSE-PRICE
 UPDATE-HOUSE-PRICE
 "min" "mean" "median" "max"
-1
+2
 
 SLIDER
 875
@@ -818,7 +803,7 @@ CONSTRUCTION-TAX
 CONSTRUCTION-TAX
 1
 100
-30
+15
 1
 1
 %
