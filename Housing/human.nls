@@ -85,9 +85,9 @@ to walk
   [
     fd 1
     ;; rotates?
-    if random 1 = 1
+    if random 2 = 1
     [ ;; where?
-      ifelse random 1 = 1
+      ifelse random 2 = 1
       [ right 90 ]
       [ left 90 ]
     ]
