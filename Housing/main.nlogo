@@ -193,26 +193,6 @@ to population_control
 
 end
 
-to humans_resolve_negotiations
-  let messages filter [ message_get_kind ? = "RFQ" ] OBS-CURRENT-MESSAGES
-  foreach messages [
-    let buyer ( message_get_sender ? )
-    let seller ( message_get_recipient ? )
-    let price item 1 ( message_get_content ? )
-    let negotiated-house item 0 ( message_get_content ? )
-
-    if calc_negotiation_score buyer < calc_negotiation_score seller [
-      set price calc_house_seller_price negotiated-house
-    ]
-
-    if [ price < money ] of buyer [
-      ask negotiated-house [ set base-price price ]
-      do_buy_house negotiated-house
-    ]
-  ]
-end
-
-
 to humans_procreate
   let able-to-procreate sort-on [money] humans with [ life < LIFE-TO-PROCREATE and can-procreate]
   foreach able-to-procreate[

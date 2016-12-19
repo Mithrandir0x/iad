@@ -56,6 +56,10 @@ to monitor_new_house_built
   set MONITOR-HOUSES-BUILT MONITOR-HOUSES-BUILT + 1
 end
 
+to monitor_new_house_bought
+  set MONITOR-HOUSES-BOUGHT MONITOR-HOUSES-BOUGHT + 1
+end 
+
 to new_house_built [ price ]
   set LIST-CONSTRUCTION-PRICES lput price LIST-CONSTRUCTION-PRICES
 end 

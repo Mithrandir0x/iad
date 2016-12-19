@@ -71,7 +71,7 @@ to human_behave
   walk
   
   ;; TODO do_buy_houses first
-  do_build_houses
+  build_houses
   
 end
 
@@ -115,9 +115,10 @@ to update_shape
 end
 
 
-to do_build_houses
+to build_houses
   if (num-houses > 0 or HOMELESS-CAN-BUILD) and num-houses < MAX-HOUSES-IN-PROPERTY
   [
+    ;; check houses around and if there isn't any house in the current patch
     if any? houses in-radius RADIUS and [free] of patch-here
     [
       let needed check_construction_prices
@@ -136,6 +137,8 @@ end
 to-report buyable_houses
   report min-one-of ( houses in-radius 5 with [owner != nobody and base-price < [money] of myself] ) [ base-price ]
 end
+
+
 
 
 to buy_houses
@@ -161,12 +164,13 @@ end
 
 to do_buy_house [ affordable ]
   set MONITOR-HOUSES-BOUGHT MONITOR-HOUSES-BOUGHT + 1
+  
   show (word self " buys " affordable " at " [patch-here] of affordable " for " [base-price] of affordable " €")
   ;; human asks house to add some parameters
   ask affordable[
     ;; house is empty if human posesses another house
     if [num-houses = 0] of myself [ 
-      set empty false 
+      set empty false
     ]
     set owner myself
   ]
@@ -178,19 +182,8 @@ to do_buy_house [ affordable ]
   set num-houses num-houses +  1
 end
 
+
 to-report is_house_affordable [ asked-price ]
   report asked-price <= money
-end
-
-
-to build_houses
-  let pr-required calc_money_build_house
-  
-  ;; required SMI
-  ;;let pr-required SMI * HOUSE-CONSTRUCTION-REQUIRED-SMI
-  ;; required IPC%
-  ;;set pr-required pr-required + (pr-required * IPC * 0.01)
-  
-  if money > pr-required [ set can-build true]
 end
 
