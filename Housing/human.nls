@@ -88,8 +88,8 @@ to walk
     if random 2 = 1
     [ ;; where?
       ifelse random 2 = 1
-      [ right 90 ]
-      [ left 90 ]
+      [ right 45 ]
+      [ left 45 ]
     ]
   ]
 end
