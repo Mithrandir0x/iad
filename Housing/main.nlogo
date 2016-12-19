@@ -1,7 +1,7 @@
 extensions[ array table ]
 
 breed[ councils council ]
-patches-own[ free ]
+patches-own[ free soil-price]
 
 globals[
   EARN-EACH
@@ -70,6 +70,7 @@ to setup
   ask patches [
     set free true
     set pcolor grey
+    set soil-price 0
   ]
 
   create-councils INIT-CITY-COUNCILS[
@@ -128,6 +129,7 @@ to go
   ;; updates shapes
   update_all_humans
   update_all_houses
+
 
   update_monitors
   tick
@@ -263,13 +265,26 @@ to kill_human [ _human ]
           [
             set empty true
           ]
+
+          ;; updates the price of the house
+          set base-price base-price + (base-price * (IPC * 0.01))
         ]
       ]
     ]
 
     ;; destroy rest of properties
 
-    ask houses with [owner =  myself][die]
+    ask houses with [owner =  myself][
+      die
+      ask patch-here [
+        if not free[
+          if trace [ show (word "Setting soil free")]
+          set free true
+        ]
+
+
+      ]
+    ]
 
     die
   ]
@@ -285,42 +300,15 @@ end
 to update_all_houses
  ask houses[ house_update_colors ]
 end
-
-
-to swap_messages
-  set OBS-CURRENT-MESSAGES OBS-NEXT-MESSAGES
- set OBS-NEXT-MESSAGES []
-end
-
-to send_message [ recipient sender kind message ]
-  print (word recipient " recieves [" kind "] message witch content [" message "] from [" sender "]" )
-  set OBS-NEXT-MESSAGES lput (list sender recipient kind message) OBS-NEXT-MESSAGES
-end
-
-to-report message_get_sender [ msg ]
-  report item 0 msg
-end
-
-to-report message_get_recipient [ msg ]
-  report item 1 msg
-end
-
-to-report message_get_kind [ msg ]
-  report item 2 msg
-end
-
-to-report message_get_content [ msg ]
-  report item 3 msg
-end
 @#$#@#$#@
 GRAPHICS-WINDOW
 16
 10
-524
-539
-40
-40
-6.15
+519
+534
+30
+30
+8.082
 1
 10
 1
@@ -330,10 +318,10 @@ GRAPHICS-WINDOW
 1
 1
 1
--40
-40
--40
-40
+-30
+30
+-30
+30
 1
 1
 1
@@ -366,16 +354,16 @@ SMI
 SMI
 1
 1500
-593
+1500
 1
 1
 €
 HORIZONTAL
 
 SLIDER
-735
+630
 110
-910
+865
 143
 MIN-POPULATION
 MIN-POPULATION
@@ -389,9 +377,9 @@ HORIZONTAL
 
 SLIDER
 630
-155
+195
 835
-188
+228
 INIT-HOUSES
 INIT-HOUSES
 0
@@ -404,9 +392,9 @@ HORIZONTAL
 
 SLIDER
 628
-246
+286
 800
-279
+319
 INIT-CITY-COUNCILS
 INIT-CITY-COUNCILS
 1
@@ -456,14 +444,14 @@ PENS
 
 SLIDER
 630
-200
+240
 862
-233
+273
 MAX-HOUSES-IN-PROPERTY
 MAX-HOUSES-IN-PROPERTY
 1
 20
-3
+4
 1
 1
 NIL
@@ -510,6 +498,7 @@ PENS
 "free" 1.0 0 -955883 true "" "plot MONITOR-FREE-HOUSES"
 "not empty" 1.0 0 -13840069 true "" "plot MONITOR-NOT-EMPTY-HOUSES"
 "total" 1.0 0 -16777216 true "" "plot count houses"
+"free soil" 1.0 0 -13791810 true "" "plot count patches with [free]"
 
 PLOT
 554
@@ -534,14 +523,14 @@ PENS
 
 SLIDER
 875
-200
+240
 1145
-233
+273
 SOCIAL-STATUSES
 SOCIAL-STATUSES
 2
 5
-4
+5
 1
 1
 NIL
@@ -680,15 +669,15 @@ count humans
 11
 
 SLIDER
-631
-112
-726
-145
+630
+150
+865
+183
 IPC
 IPC
 1
 100
-3
+50
 1
 1
 %
@@ -718,9 +707,9 @@ MONITOR-HOUSES-BOUGHT
 
 SLIDER
 845
-155
+195
 1145
-188
+228
 HOMELESS-LIFE-EXPECTANCY
 HOMELESS-LIFE-EXPECTANCY
 -10
@@ -732,7 +721,7 @@ ticks
 HORIZONTAL
 
 SLIDER
-915
+875
 110
 1145
 143
@@ -740,7 +729,7 @@ DESIRED-POPULATION
 DESIRED-POPULATION
 500
 1000
-600
+500
 1
 1
 NIL
@@ -748,20 +737,20 @@ HORIZONTAL
 
 SWITCH
 625
-290
+330
 832
-323
+363
 HOMELESS-CAN-BUILD
 HOMELESS-CAN-BUILD
-0
+1
 1
 -1000
 
 SWITCH
 625
-335
+375
 728
-368
+408
 TRACE
 TRACE
 1
@@ -809,6 +798,42 @@ true
 PENS
 "built" 1.0 0 -2674135 true "" "plot MONITOR-HOUSES-BUILT"
 "bought" 1.0 0 -13791810 true "" "plot MONITOR-HOUSES-BOUGHT"
+
+CHOOSER
+875
+285
+1145
+330
+UPDATE-HOUSE-PRICE
+UPDATE-HOUSE-PRICE
+"min" "mean" "median" "max"
+1
+
+SLIDER
+875
+155
+1140
+188
+CONSTRUCTION-TAX
+CONSTRUCTION-TAX
+1
+100
+30
+1
+1
+%
+HORIZONTAL
+
+MONITOR
+520
+80
+600
+125
+max transactions
+max [transactions] of houses
+17
+1
+11
 
 @#$#@#$#@
 ## WHAT IS IT?

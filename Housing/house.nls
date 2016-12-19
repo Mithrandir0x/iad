@@ -5,12 +5,14 @@ houses-own[
   owner
   empty
   city-council
+  transactions
   ;; life 1000 + random 1000
 ]
 
 
 to house_behave
   house_update_colors
+  if ticks mod 10 = 0 [house_update_price]
 end
 
 to house_update_colors
@@ -23,6 +25,33 @@ to house_update_colors
   ]
 end
 
+to house_update_price
+  let price 0
+  if UPDATE-HOUSE-PRICE = "min" [set price min [base-price] of houses in-radius RADIUS]
+  if UPDATE-HOUSE-PRICE = "mean" [set price mean [base-price] of houses in-radius RADIUS]
+  if UPDATE-HOUSE-PRICE = "median" [set price median [base-price] of houses in-radius RADIUS]  
+  if UPDATE-HOUSE-PRICE = "max" [set price max [base-price] of houses in-radius RADIUS]  
+  
+  set base-price price
+  
+  ;;let _houses houses in-radius RADIUS
+  ;;if any? _houses
+  ;;  [
+  ;;    let _mean mean [base-price] of _houses
+  ;;    let _price _mean
+  ;;    let _empty count _houses with [empty]
+  ;;    let _not_empty count _houses with [ not empty ]
+    
+    
+  ;;    let _differential _mean * 0.01 / count _houses
+  ;;    set _differential _differential * (_not_empty - _empty)
+
+  ;;    if trace [show (word "old price " base-price " new price " _differential)]
+  ;;    set base-price _price;; + _differential
+
+  ;;  ]
+end
+
 
 to initialize_house[the-patch the-owner the-price]
   setxy [pxcor] of the-patch [pycor] of the-patch
@@ -32,6 +61,7 @@ to initialize_house[the-patch the-owner the-price]
   set empty true
   set city-council nobody
   set base-price the-price;; calc_house_base_price self
+  set transactions 0
 end
 
 
@@ -43,7 +73,7 @@ to initialize_seed_house_of [council the-patch the-owner]
   set city-council council
   set base-price calc_seed_house_price self
   ask patch-here [ set free false]
-  
+  set transactions 0
   if owner != nobody[
     set empty false
     ;; changes made in the owner of this house
