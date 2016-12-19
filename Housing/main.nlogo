@@ -104,7 +104,6 @@ to setup
 end
 
 to go
-  swap_messages
 
   if ticks mod EARN-EACH = 0 [ humans_earn ]
   ;;if ticks mod LOSE-EACH = 0 [ humans_lose ]
@@ -178,12 +177,12 @@ to population_control
 
 
   ;;; EXTREME CASES
-  if count humans < MIN-POPULATION [
-    if trace[show (word "Creating humans")]
-      create-humans 0.5 * MIN-POPULATION [
-        initialize_human
-      ]
-  ]
+  ;;if count humans < MIN-POPULATION [
+  ;;  if trace[show (word "Creating humans")]
+  ;;    create-humans 0.5 * MIN-POPULATION [
+  ;;      initialize_human
+  ;;    ]
+  ;;]
 
   if count humans > 2 * DESIRED-POPULATION [
     if trace[show (word "Killing  humans")    ]
@@ -287,12 +286,11 @@ to update_all_houses
  ask houses[ house_update_colors ]
 end
 
+
 to swap_messages
   set OBS-CURRENT-MESSAGES OBS-NEXT-MESSAGES
-  set OBS-NEXT-MESSAGES []
+ set OBS-NEXT-MESSAGES []
 end
-
-
 
 to send_message [ recipient sender kind message ]
   print (word recipient " recieves [" kind "] message witch content [" message "] from [" sender "]" )
@@ -383,7 +381,7 @@ MIN-POPULATION
 MIN-POPULATION
 1
 50
-50
+25
 1
 1
 NIL
@@ -398,7 +396,7 @@ INIT-HOUSES
 INIT-HOUSES
 0
 50
-15
+20
 1
 1
 NIL
@@ -727,7 +725,7 @@ HOMELESS-LIFE-EXPECTANCY
 HOMELESS-LIFE-EXPECTANCY
 -10
 -1
--10
+-1
 1
 1
 ticks
@@ -755,7 +753,7 @@ SWITCH
 323
 HOMELESS-CAN-BUILD
 HOMELESS-CAN-BUILD
-0
+1
 1
 -1000
 
@@ -766,7 +764,7 @@ SWITCH
 368
 TRACE
 TRACE
-1
+0
 1
 -1000
 

@@ -70,9 +70,11 @@ to human_behave
   
   walk
   
-  ;; TODO do_buy_houses first
-  build_houses
-  
+  if num-houses < MAX-HOUSES-IN-PROPERTY
+  [
+    buy_houses
+    build_houses
+  ]
 end
 
 
@@ -127,63 +129,40 @@ to build_houses
   ]
 end
 
-
-
 to-report affordable_houses
   report one-of houses in-radius 5 with [owner = nobody and base-price < [money] of myself]
 end
 
 
 to-report buyable_houses
-  report min-one-of ( houses in-radius 5 with [owner != nobody and base-price < [money] of myself] ) [ base-price ]
+  ;; returns the cheapest house around
+  report min-one-of ( houses in-radius RADIUS with [owner != nobody and base-price < [money] of myself] ) [ base-price ]
 end
-
-
-
 
 to buy_houses
-  let affordable affordable_houses
-  ifelse affordable != nobody
-  [
-    do_buy_house affordable
-  ]
-  [
+  ;;let affordable affordable_houses
+  ;; not yet
+  ;;ifelse affordable != nobody
+  ;;[
+  ;;  do_buy_house affordable
+  ;;]
+  ;;[
+  
     let buyable buyable_houses
     if buyable != nobody [
-      let owners [ (list owner (house who) ( calc_house_offer_price (house who) ) ) ] of buyable
-      if length owners > 0 [
-        foreach owners [
-          ; recipient sender RFQ [ house-agent price ]
-          send_message (item 0 ?) (human who) "RFQ" (list (item 1 ?) (item 2 ?))
-        ]
-      ]
-    ]
-  ]
+      ;; calls the mediator
+      ;; add _house _who _price
+      mediator_add_offer buyable  self calc_house_offer_price buyable
+    ] 
+      
+    ;; supposed to be just one owner?
+    ;;  let owners [ (list owner (house who) ( calc_house_offer_price (house who) ) ) ] of buyable
+    ;;  if length owners > 0 [
+    ;;    foreach owners [
+    ;;      ; recipient sender RFQ [ house-agent price ]
+    ;;      send_message (item 0 ?) (human who) "RFQ" (list (item 1 ?) (item 2 ?))
+    ;;    ]
+    ;;  ]
+    ;;]
+  ;;]
 end
-
-
-to do_buy_house [ affordable ]
-  set MONITOR-HOUSES-BOUGHT MONITOR-HOUSES-BOUGHT + 1
-  
-  show (word self " buys " affordable " at " [patch-here] of affordable " for " [base-price] of affordable " €")
-  ;; human asks house to add some parameters
-  ask affordable[
-    ;; house is empty if human posesses another house
-    if [num-houses = 0] of myself [ 
-      set empty false
-    ]
-    set owner myself
-  ]
-  
-  ;; adds the price to the list
-  new_house_bought [base-price] of affordable
-  
-  set money money - [base-price] of affordable
-  set num-houses num-houses +  1
-end
-
-
-to-report is_house_affordable [ asked-price ]
-  report asked-price <= money
-end
-

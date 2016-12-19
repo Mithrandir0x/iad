@@ -6,6 +6,7 @@ end
 
 
 to mediator_add_offer [ _house _who _price]
+  if trace [ show (word _who " wants to buy " _house " for " _price " to " [owner] of _house) ]
   set MEDIATOR-OFFERS lput (list _house _who _price) MEDIATOR-OFFERS
 end
 
@@ -15,13 +16,16 @@ to mediator_add_construction [ _patch _who _price]
   set MEDIATOR-CONSTRUCTIONS lput (list _patch _who _price) MEDIATOR-CONSTRUCTIONS
 end
 
-
-
 to mediator_behave
   
   ;; does offers first
   ;;humans_resolve_negotiations
-  
+
+  if not empty? MEDIATOR-OFFERS
+  [
+    mediator_resolve_negotiations
+  ]
+    
   if not empty? MEDIATOR-CONSTRUCTIONS
   [
     mediator_build_constructions
@@ -72,21 +76,76 @@ to mediator_build_constructions
   ]
 end
 
-to humans_resolve_negotiations
-  let messages filter [ message_get_kind ? = "RFQ" ] OBS-CURRENT-MESSAGES
-  foreach messages [
-    let buyer ( message_get_sender ? )
-    let seller ( message_get_recipient ? )
-    let price item 1 ( message_get_content ? )
-    let negotiated-house item 0 ( message_get_content ? )
+to mediator_resolve_negotiations
+  ;;let messages filter [ message_get_kind ? = "RFQ" ] OBS-CURRENT-MESSAGES
+  foreach MEDIATOR-OFFERS [
+    ;;let buyer ( message_get_sender ? )
+    let negotiated-house item 0 ? ;;( message_get_content ? )
+    let buyer item 1 ?
+    let buyer-price item 2 ? ;; ( message_get_content ? )
+    let seller [owner] of negotiated-house
+    ;;let seller ( message_get_recipient ? )
+    ;;let price item 1 ( message_get_content ? )
+    
+    let seller-points [eloquence + expertise] of seller
+    let buyer-points [eloquence + expertise] of buyer
+    
+    ;; a couple of doublechecks
+    if [num-houses < MAX-HOUSES-IN-PROPERTY] of buyer 
+    and seller != buyer
+    and [base-home] of seller != negotiated-house ;; one cannot sell its base house
+    [
+      let seller-price -1
 
-    if calc_negotiation_score buyer < calc_negotiation_score seller [
-      set price calc_house_seller_price negotiated-house
-    ]
-
-    if [ price < money ] of buyer [
-      ask negotiated-house [ set base-price price ]
-      do_buy_house negotiated-house
+      if calc_negotiation_score buyer < calc_negotiation_score seller [
+        ask seller[
+          set seller-price calc_house_seller_price negotiated-house
+        ]
+      ]
+      
+      
+      ;; updates the base-price based on points
+      ;; if its draw the price remains the same
+      if seller-points != buyer-points
+      [ ifelse seller-points > buyer-points
+        [ ;;seller wins
+          ask negotiated-house [ set base-price seller-price ]
+        ]
+        [ ;; buyer wins
+          ask negotiated-house [ set base-price buyer-price ]
+        ]
+      ]
+      
+      ;; checks if the buyer is still able to buy the house
+      if [money] of buyer > [base-price] of negotiated-house[
+        finish_negotiation negotiated-house buyer seller
+      ]
     ]
   ]
+end
+
+
+to finish_negotiation [ _house _buyer _seller ]
+  monitor_new_house_bought
+  if trace [ show (word "mediator negotiaton closed on " _house " between " _buyer " and " _seller " for " [base-price] of _house) ]
+
+  ;; when is the buyer's unique house
+  if [num-houses = 0] of _buyer [ 
+      ask _house[ set empty false ]
+      ask _buyer[ set base-home _house ]
+  ]
+      
+  ;;Always
+  ;; change money
+  ask _buyer [ set money money - [base-price] of _house ]
+  ask _seller [ set money money + [base-price] of _house ]
+  
+  ;; change property
+  ask _house [ set owner _buyer]
+  ask _buyer [ set num-houses num-houses + 1 ]
+  ask _seller[ set num-houses num-houses - 1 ]
+  
+  ;; increases expertise
+  ask _buyer [ set expertise expertise + 1 ]
+  ask _seller [ set expertise expertise + 1]
 end

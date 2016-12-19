@@ -66,23 +66,13 @@ end
 
 to-report calc_differential_price [ house ]
   let house-base-price [ base-price ] of house
-  report ( 0.25 * ( house-base-price - min [ base-price ] of houses in-radius 5 ) / ( social-status + 1 ) )
+  report ( 0.25 * ( house-base-price - min [ base-price ] of houses in-radius RADIUS ) / ( social-status + 1 ) )
 end
 
 to-report calc_negotiation_score [ human ]
   report [ eloquence + expertise ] of human
 end
 
-to-report calc_money_build_house
-  let price -1
-  if any? houses in-radius 10 [
-    let base_vacias 0.4 * mean [base-price] of houses with [empty] in-radius 10
-    let base_ocupadas 0.6 * mean [base-price] of houses with [not empty] in-radius 10
-    set price base_vacias + base_ocupadas
-  ]
-  report price
-end 
- 
 
 
 to-report get_coords_new_house
