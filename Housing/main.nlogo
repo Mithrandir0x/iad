@@ -384,7 +384,7 @@ SMI
 SMI
 1
 2000
-886
+1716
 1
 1
 €
@@ -453,10 +453,10 @@ NIL
 1
 
 PLOT
-25
-1025
-455
-1235
+15
+1005
+445
+1215
 Savings
 NIL
 €
@@ -487,10 +487,10 @@ NIL
 HORIZONTAL
 
 PLOT
-18
-799
-457
-1005
+15
+790
+454
+996
 Home posession
 NIL
 humans
@@ -528,10 +528,10 @@ PENS
 "total" 1.0 0 -16777216 true "" "plot count houses"
 
 PLOT
-554
-800
-1029
-1005
+555
+790
+1030
+995
 Population
 NIL
 humans
@@ -598,9 +598,9 @@ MONITOR-MEDIAN-SAVINGS
 
 MONITOR
 460
-798
-538
-843
+795
+540
+840
 homeless
 MONITOR-HOMELESs
 0
@@ -674,10 +674,10 @@ count houses
 11
 
 MONITOR
-520
-20
-586
-65
+555
+500
+621
+545
 humans
 count humans
 0
@@ -693,7 +693,6 @@ IPC
 IPC
 1
 100
-5
 1
 1
 %
@@ -730,7 +729,7 @@ DESIRED-POPULATION
 DESIRED-POPULATION
 100
 1000
-308
+313
 1
 1
 NIL
@@ -759,9 +758,9 @@ TRACE
 -1000
 
 PLOT
-20
+15
 550
-535
+540
 785
 Prices
 NIL
@@ -783,9 +782,9 @@ PENS
 
 PLOT
 555
+1005
 1030
-1030
-1235
+1210
 Constructions / transactions
 NIL
 NIL
@@ -809,7 +808,7 @@ CHOOSER
 UPDATE-HOUSE-PRICE
 UPDATE-HOUSE-PRICE
 "min" "mean" "median" "max"
-1
+0
 
 SLIDER
 875
@@ -820,17 +819,17 @@ CONSTRUCTION-TAX
 CONSTRUCTION-TAX
 1
 100
-15
+25
 1
 1
 %
 HORIZONTAL
 
 MONITOR
-520
-80
-600
-125
+855
+500
+935
+545
 max transactions
 max [transactions] of houses
 17
@@ -838,10 +837,10 @@ max [transactions] of houses
 11
 
 MONITOR
-520
-140
-612
-185
+635
+500
+727
+545
 homeless %
 (count humans with [num-houses = 0]) / (count humans) * 100
 0
@@ -849,21 +848,21 @@ homeless %
 11
 
 MONITOR
-520
-190
-587
-235
-empty %
+740
+500
+842
+545
+empty houses %
 (count houses with[empty])/ (count houses) * 100
 0
 1
 11
 
 PLOT
+1125
 555
-430
-1120
-550
+1515
+675
 percentuals
 NIL
 %
@@ -903,6 +902,50 @@ SOCIAL-HOUSES
 0
 1
 -1000
+
+PLOT
+1060
+700
+1470
+830
+Population per Social Status
+NIL
+NIL
+0.0
+10.0
+0.0
+10.0
+true
+true
+"" ""
+PENS
+"Level 1" 1.0 0 -7500403 true "" "plot count humans with [ social-status = 1 ]"
+"Level 2" 1.0 0 -13840069 true "" "plot count humans with [ social-status = 2 ]"
+"Level 3" 1.0 0 -13345367 true "" "plot count humans with [ social-status = 3 ]"
+"Level 4" 1.0 0 -5825686 true "" "plot count humans with [ social-status = 4 ]"
+"Level 5" 1.0 0 -955883 true "" "plot count humans with [ social-status = 5 ]"
+
+PLOT
+1060
+850
+1470
+980
+Homeless Population per Social Status
+NIL
+NIL
+0.0
+10.0
+0.0
+10.0
+true
+true
+"" ""
+PENS
+"Level 1" 1.0 0 -7500403 true "" "plot count humans with [ social-status = 1 and num-houses = 0 ]"
+"Level 2" 1.0 0 -13840069 true "" "plot count humans with [ social-status = 2 and num-houses = 0 ]"
+"Level 3" 1.0 0 -13345367 true "" "plot count humans with [ social-status = 3 and num-houses = 0 ]"
+"Level 4" 1.0 0 -5825686 true "" "plot count humans with [ social-status = 4 and num-houses = 0 ]"
+"Level 5" 1.0 0 -955883 true "" "plot count humans with [ social-status = 5 and num-houses = 0 ]"
 
 @#$#@#$#@
 ## WHAT IS IT?
