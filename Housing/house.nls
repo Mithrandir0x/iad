@@ -7,7 +7,6 @@ houses-own[
   city-council
   transactions
   new-price
-  ;; life 1000 + random 1000
 ]
 
 
@@ -35,22 +34,6 @@ to house_update_new_price
     ;; decreases the price if the house is alone
     set new-price new-price - (new-price * DEVALUATE-EMPTY-HOUSE * 0.01)
   ]
-  ;;let _houses houses in-radius RADIUS
-  ;;if any? _houses
-  ;;  [
-  ;;    let _mean mean [base-price] of _houses
-  ;;    let _price _mean
-  ;;    let _empty count _houses with [empty]
-  ;;    let _not_empty count _houses with [ not empty ]
-    
-    
-  ;;    let _differential _mean * 0.01 / count _houses
-  ;;    set _differential _differential * (_not_empty - _empty)
-
-  ;;    if trace [show (word "old price " base-price " new price " _differential)]
-  ;;    set base-price _price;; + _differential
-
-  ;;  ]
 end
 to house_swap_price
   set base-price new-price

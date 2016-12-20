@@ -48,7 +48,7 @@ to-report _check_construction_prices
     ]
   ]
 
-  report (base_vacias + base_ocupadas)
+  report (base_vacias + base_ocupadas) + (base_vacias + base_ocupadas) * (CONSTRUCTION-TAX * 0.01)
 end
 
 
@@ -79,7 +79,7 @@ to-report calc_differential_price [ house ]
   ;;report ( 0.25 * ( house-base-price - min [ base-price ] of houses in-radius RADIUS ) / ( social-status + 1 ) )
   
   ;; the maximum displacement of the price may be 0.25
-  let base-differential 0.1 * house-base-price / SOCIAL-STATUSES
+  let base-differential 0.01 * NEGOTIATION-POWER * house-base-price / SOCIAL-STATUSES
   ;; reports the differential based on the social status of the agent
   report base-differential * social-status
 end
