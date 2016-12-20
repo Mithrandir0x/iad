@@ -54,7 +54,6 @@ end
 
 
 to monitor_new_house_built
-
   set MONITOR-HOUSES-BUILT MONITOR-HOUSES-BUILT + 1
 end
 

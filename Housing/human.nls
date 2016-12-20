@@ -118,7 +118,7 @@ to build_houses
   if (num-houses > 0 or HOMELESS-CAN-BUILD) and num-houses < MAX-HOUSES-IN-PROPERTY
   [
     ;; check houses around and if there isn't any house in the current patch
-    if any? houses in-radius RADIUS and [free] of patch-here
+    if (any? houses in-radius RADIUS or any? councils in-radius RADIUS) and [free] of patch-here 
     [
       let needed check_construction_prices
       if money > needed [ mediator_add_construction patch-here self needed ]

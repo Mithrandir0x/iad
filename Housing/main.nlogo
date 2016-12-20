@@ -1,6 +1,7 @@
 extensions[ array table ]
 
 breed[ councils council ]
+councils-own[ floor-price ]
 patches-own[ free soil-price]
 
 globals[
@@ -65,7 +66,7 @@ to setup
   set LOSE-EACH 10
   set BAD-LUCK-EACH 100
   set GOOD-LUCK-EACH 20
-  set RADIUS 3
+  set RADIUS 5
 
   ;; initialize all patches to be free for edification
   ask patches [
@@ -107,15 +108,21 @@ end
 
 to go
 
+  ask councils[ if any? houses[ set floor-price min [base-price] of houses]]
+
   if ticks mod EARN-EACH = 0 [ humans_earn ]
   ;;if ticks mod LOSE-EACH = 0 [ humans_lose ]
 
-  ask houses [ house_behave ]
+  if ticks mod 10 = 0
+  [
+    ask houses [ house_update_new_price]
+    ask houses [ house_swap_price]
+  ]
   ask humans [ human_behave ]
 
 
 
-  if ticks mod BAD-LUCK-EACH = 0 [ humans_bad_luck ]
+  ;;if ticks mod BAD-LUCK-EACH = 0 [ humans_bad_luck ]
 
 
   if ticks mod GOOD-LUCK-EACH = 0 [ humans_good_luck ]
@@ -145,7 +152,7 @@ end
 
 to humans_lose
   ask humans [
-    set money money - (SMI * 0.1 * (1 + random 5))
+    set money money - (SMI * 0.01 * random 30)
   ]
 end
 
@@ -154,8 +161,8 @@ to humans_bad_luck
   ask humans with [ money < (max[money] of humans * 0.8) and money > 0 ]
   [
     ifelse money > median [money] of humans
-    [set money money - (money * 0.01 * random 10)]
-    [set money money - (money * 0.01 * random 80)]
+    [set money money - (money * 0.01 * random 50) ]
+    [set money money - (money * 0.01 * random 30) ]
   ]
 end
 
@@ -240,7 +247,7 @@ end
 to kill_human [ _human ]
   ask _human[
     let sons humans with [father = myself]
-
+    let heritage nobody
     if any? sons
     [
       ;; give money to one son
@@ -249,7 +256,7 @@ to kill_human [ _human ]
       ;; give houses randomly
       ask houses with [owner = myself]
       [
-        let heritage self
+        set heritage self
         let lucky-son one-of sons with [num-houses < MAX-HOUSES-IN-PROPERTY]
         ;; if there is nobody, this house will be removed at the end of the procedure
         ;; ugly though
@@ -267,8 +274,32 @@ to kill_human [ _human ]
             set empty true
           ]
 
+          ;; updates the num of houses of the son
+          ask lucky-son[ set num-houses num-houses + 1]
           ;; updates the price of the house
           set base-price base-price + (base-price * (IPC * 0.01))
+        ]
+      ]
+    ]
+
+    if SOCIAL-HOUSES
+    [
+      ;; gives the rest houses to homeless people
+      ask houses with [owner = myself]
+      [
+
+        set heritage self
+        let homeless min-one-of humans with [num-houses = 0] [money]
+        ;; if there is nobody, this house will be removed at the end of the procedure
+        if homeless != nobody[
+          set owner homeless
+          if trace [ show (word "Social house " self " from " myself " to " homeless )]
+          ask homeless[
+            set base-home heritage
+            set num-houses num-houses + 1
+            ]
+
+          set empty false
         ]
       ]
     ]
@@ -284,7 +315,7 @@ to kill_human [ _human ]
       ]
       die
     ]
-
+    ;; human dies pacefully
     die
   ]
 end
@@ -352,8 +383,8 @@ SLIDER
 SMI
 SMI
 1
-1500
-992
+2000
+886
 1
 1
 €
@@ -368,7 +399,7 @@ MIN-POPULATION
 MIN-POPULATION
 1
 50
-25
+50
 1
 1
 NIL
@@ -383,7 +414,7 @@ INIT-HOUSES
 INIT-HOUSES
 0
 100
-25
+100
 1
 1
 NIL
@@ -428,7 +459,7 @@ PLOT
 1235
 Savings
 NIL
-NIL
+€
 0.0
 10.0
 0.0
@@ -437,7 +468,6 @@ true
 true
 "plot 0" ""
 PENS
-"max" 1.0 0 -2674135 true "" "plot 0;;MONITOR-MAX-SAVINGS"
 "mean" 1.0 0 -955883 true "" "plot MONITOR-MEAN-SAVINGS"
 "median" 1.0 0 -13840069 true "" "plot MONITOR-MEDIAN-SAVINGS"
 
@@ -450,7 +480,7 @@ MAX-HOUSES-IN-PROPERTY
 MAX-HOUSES-IN-PROPERTY
 1
 20
-5
+2
 1
 1
 NIL
@@ -463,7 +493,7 @@ PLOT
 1005
 Home posession
 NIL
-NIL
+humans
 0.0
 10.0
 0.0
@@ -484,7 +514,7 @@ PLOT
 783
 Houses
 NIL
-NIL
+houses
 0.0
 10.0
 0.0
@@ -494,10 +524,8 @@ true
 "" ""
 PENS
 "empty" 1.0 0 -2674135 true "" "plot MONITOR-EMPTY-HOUSES"
-"free" 1.0 0 -955883 true "" "plot MONITOR-FREE-HOUSES"
 "not empty" 1.0 0 -13840069 true "" "plot MONITOR-NOT-EMPTY-HOUSES"
 "total" 1.0 0 -16777216 true "" "plot count houses"
-"free soil" 1.0 0 -13791810 true "" "plot count patches with [free]"
 
 PLOT
 554
@@ -506,7 +534,7 @@ PLOT
 1005
 Population
 NIL
-NIL
+humans
 0.0
 10.0
 0.0
@@ -527,7 +555,7 @@ SLIDER
 233
 SOCIAL-STATUSES
 SOCIAL-STATUSES
-2
+1
 5
 5
 1
@@ -613,10 +641,10 @@ MONITOR-MORE-HOUSES
 11
 
 MONITOR
-1041
-555
-1120
+1035
 600
+1114
+645
 empty
 MONITOR-EMPTY-HOUSES
 17
@@ -624,21 +652,10 @@ MONITOR-EMPTY-HOUSES
 11
 
 MONITOR
-1041
-607
-1120
-652
-free
-MONITOR-FREE-HOUSES
-0
-1
-11
-
-MONITOR
-1042
-659
-1121
-704
+1035
+645
+1114
+690
 not empty
 MONITOR-NOT-EMPTY-HOUSES
 17
@@ -646,10 +663,10 @@ MONITOR-NOT-EMPTY-HOUSES
 11
 
 MONITOR
-1040
-710
-1107
-755
+1035
+555
+1102
+600
 total
 count houses
 0
@@ -657,10 +674,10 @@ count houses
 11
 
 MONITOR
-530
-10
-596
-55
+520
+20
+586
+65
 humans
 count humans
 0
@@ -676,7 +693,7 @@ IPC
 IPC
 1
 100
-3
+5
 1
 1
 %
@@ -713,7 +730,7 @@ DESIRED-POPULATION
 DESIRED-POPULATION
 100
 1000
-312
+308
 1
 1
 NIL
@@ -748,7 +765,7 @@ PLOT
 785
 Prices
 NIL
-NIL
+€
 0.0
 10.0
 0.0
@@ -792,7 +809,7 @@ CHOOSER
 UPDATE-HOUSE-PRICE
 UPDATE-HOUSE-PRICE
 "min" "mean" "median" "max"
-2
+1
 
 SLIDER
 875
@@ -819,6 +836,73 @@ max [transactions] of houses
 17
 1
 11
+
+MONITOR
+520
+140
+612
+185
+homeless %
+(count humans with [num-houses = 0]) / (count humans) * 100
+0
+1
+11
+
+MONITOR
+520
+190
+587
+235
+empty %
+(count houses with[empty])/ (count houses) * 100
+0
+1
+11
+
+PLOT
+555
+430
+1120
+550
+percentuals
+NIL
+%
+0.0
+10.0
+0.0
+100.0
+true
+true
+"" ""
+PENS
+"empty houses" 1.0 0 -2674135 true "" "plot (count houses with[empty])/ (count houses) * 100"
+"homeless" 1.0 0 -1184463 true "" "plot (count humans with [num-houses = 0]) / (count humans) * 100"
+
+SLIDER
+875
+305
+1145
+338
+DEVALUATE-EMPTY-HOUSE
+DEVALUATE-EMPTY-HOUSE
+0
+5
+1
+1
+1
+%
+HORIZONTAL
+
+SWITCH
+745
+375
+912
+408
+SOCIAL-HOUSES
+SOCIAL-HOUSES
+0
+1
+-1000
 
 @#$#@#$#@
 ## WHAT IS IT?

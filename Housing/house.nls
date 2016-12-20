@@ -6,14 +6,10 @@ houses-own[
   empty
   city-council
   transactions
+  new-price
   ;; life 1000 + random 1000
 ]
 
-
-to house_behave
-  house_update_colors
-  if ticks mod 10 = 0 [house_update_price]
-end
 
 to house_update_colors
   ifelse owner = nobody
@@ -25,19 +21,19 @@ to house_update_colors
   ]
 end
 
-to house_update_price
+to house_update_new_price
   let price 0
   if UPDATE-HOUSE-PRICE = "min" [set price min [base-price] of houses in-radius RADIUS]
   if UPDATE-HOUSE-PRICE = "mean" [set price mean [base-price] of houses in-radius RADIUS]
   if UPDATE-HOUSE-PRICE = "median" [set price median [base-price] of houses in-radius RADIUS]  
   if UPDATE-HOUSE-PRICE = "max" [set price max [base-price] of houses in-radius RADIUS]  
   
-  set base-price price
+  set new-price price
   
-  if count houses in-radius RADIUS = 1
+  if empty
   [
     ;; decreases the price if the house is alone
-    set base-price base-price * 0.999
+    set new-price new-price - (new-price * DEVALUATE-EMPTY-HOUSE * 0.01)
   ]
   ;;let _houses houses in-radius RADIUS
   ;;if any? _houses
@@ -55,6 +51,9 @@ to house_update_price
   ;;    set base-price _price;; + _differential
 
   ;;  ]
+end
+to house_swap_price
+  set base-price new-price
 end
 
 

@@ -8,8 +8,12 @@ to-report calc_seed_house_price [ house ]
 end
 
 to-report check_construction_prices
-  let price mean [base-price] of houses in-radius RADIUS
-  report price + (price * (CONSTRUCTION-TAX * 0.01))
+  if any? houses in-radius RADIUS
+  [
+    let price mean [base-price] of houses in-radius RADIUS
+    report price + (price * (CONSTRUCTION-TAX * 0.01))
+  ]
+  report [floor-price] of one-of councils
 end
 
 to-report _check_construction_prices
@@ -46,6 +50,7 @@ to-report _check_construction_prices
 
   report (base_vacias + base_ocupadas)
 end
+
 
 
 to-report calc_owned_house_base_price [ house ]
