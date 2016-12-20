@@ -384,7 +384,7 @@ SMI
 SMI
 1
 2000
-1716
+586
 1
 1
 €
@@ -414,7 +414,7 @@ INIT-HOUSES
 INIT-HOUSES
 0
 100
-100
+49
 1
 1
 NIL
@@ -480,7 +480,7 @@ MAX-HOUSES-IN-PROPERTY
 MAX-HOUSES-IN-PROPERTY
 1
 20
-2
+20
 1
 1
 NIL
@@ -557,7 +557,7 @@ SOCIAL-STATUSES
 SOCIAL-STATUSES
 1
 5
-5
+3
 1
 1
 NIL
@@ -693,6 +693,7 @@ IPC
 IPC
 1
 100
+5
 1
 1
 %
@@ -729,7 +730,7 @@ DESIRED-POPULATION
 DESIRED-POPULATION
 100
 1000
-313
+513
 1
 1
 NIL
@@ -808,7 +809,7 @@ CHOOSER
 UPDATE-HOUSE-PRICE
 UPDATE-HOUSE-PRICE
 "min" "mean" "median" "max"
-0
+1
 
 SLIDER
 875
@@ -899,7 +900,7 @@ SWITCH
 408
 SOCIAL-HOUSES
 SOCIAL-HOUSES
-0
+1
 1
 -1000
 
@@ -946,6 +947,61 @@ PENS
 "Level 3" 1.0 0 -13345367 true "" "plot count humans with [ social-status = 3 and num-houses = 0 ]"
 "Level 4" 1.0 0 -5825686 true "" "plot count humans with [ social-status = 4 and num-houses = 0 ]"
 "Level 5" 1.0 0 -955883 true "" "plot count humans with [ social-status = 5 and num-houses = 0 ]"
+
+MONITOR
+1475
+700
+1532
+745
+1
+count humans with [ social-status = 1 ]
+0
+1
+11
+
+MONITOR
+1475
+745
+1532
+790
+2
+count humans with [ social-status = 2 ]
+0
+1
+11
+
+MONITOR
+1475
+790
+1532
+835
+3
+count humans with [ social-status = 3 ]
+0
+1
+11
+
+MONITOR
+1535
+700
+1592
+745
+4
+count humans with [ social-status = 4 ]
+0
+1
+11
+
+MONITOR
+1535
+745
+1592
+790
+5
+count humans with [ social-status = 5 ]
+0
+1
+11
 
 @#$#@#$#@
 ## WHAT IS IT?
