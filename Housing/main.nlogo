@@ -111,7 +111,7 @@ to go
   ask councils[ if any? houses[ set floor-price min [base-price] of houses]]
 
   if ticks mod EARN-EACH = 0 [ humans_earn ]
-  ;;if ticks mod LOSE-EACH = 0 [ humans_lose ]
+  if ticks mod LOSE-EACH = 0 [ humans_lose ]
 
   if ticks mod 10 = 0
   [
@@ -152,7 +152,7 @@ end
 
 to humans_lose
   ask humans [
-    set money money - (SMI * 0.01 * random 30)
+    set money money - (SMI * 0.01 * random 20)
   ]
 end
 
@@ -359,10 +359,10 @@ ticks
 30.0
 
 BUTTON
-628
-13
-706
-46
+520
+10
+598
+43
 SETUP
 setup
 NIL
@@ -376,25 +376,25 @@ NIL
 1
 
 SLIDER
-630
-72
-1144
-105
+522
+70
+1036
+103
 SMI
 SMI
 1
 2000
-586
+650
 1
 1
 €
 HORIZONTAL
 
 SLIDER
-630
-110
-865
-143
+522
+107
+757
+140
 MIN-POPULATION
 MIN-POPULATION
 1
@@ -406,25 +406,25 @@ NIL
 HORIZONTAL
 
 SLIDER
-630
-195
-835
-228
+522
+192
+757
+226
 INIT-HOUSES
 INIT-HOUSES
 0
 100
-49
+5
 1
 1
 NIL
 HORIZONTAL
 
 SLIDER
-628
-286
-800
-319
+522
+282
+754
+316
 INIT-CITY-COUNCILS
 INIT-CITY-COUNCILS
 1
@@ -436,10 +436,10 @@ NIL
 HORIZONTAL
 
 BUTTON
-724
-13
-787
-46
+616
+10
+679
+43
 GO
 go
 T
@@ -455,8 +455,8 @@ NIL
 PLOT
 15
 1005
-445
-1215
+455
+1225
 Savings
 NIL
 €
@@ -472,15 +472,15 @@ PENS
 "median" 1.0 0 -13840069 true "" "plot MONITOR-MEDIAN-SAVINGS"
 
 SLIDER
-630
-240
-862
-273
+522
+237
+757
+271
 MAX-HOUSES-IN-PROPERTY
 MAX-HOUSES-IN-PROPERTY
 1
 20
-4
+3
 1
 1
 NIL
@@ -549,25 +549,25 @@ PENS
 "total" 1.0 0 -16777216 true "" "plot count humans"
 
 SLIDER
-875
-200
-1145
-233
+770
+192
+1040
+225
 SOCIAL-STATUSES
 SOCIAL-STATUSES
 1
 5
-3
+1
 1
 1
 NIL
 HORIZONTAL
 
 MONITOR
-470
-1030
-547
-1075
+460
+1010
+537
+1055
 max
 MONITOR-MAX-SAVINGS
 0
@@ -575,10 +575,10 @@ MONITOR-MAX-SAVINGS
 11
 
 MONITOR
-470
-1080
-547
-1125
+460
+1060
+537
+1105
 mean
 MONITOR-MEAN-SAVINGS
 0
@@ -586,10 +586,10 @@ MONITOR-MEAN-SAVINGS
 11
 
 MONITOR
-470
-1130
-546
-1175
+460
+1110
+536
+1155
 median
 MONITOR-MEDIAN-SAVINGS
 0
@@ -610,7 +610,7 @@ MONITOR-HOMELESs
 MONITOR
 461
 847
-537
+541
 892
 1 house
 MONITOR-ONE-HOUSE
@@ -621,7 +621,7 @@ MONITOR-ONE-HOUSE
 MONITOR
 462
 895
-536
+542
 940
 2 houses
 MONITOR-TWO-HOUSES
@@ -632,7 +632,7 @@ MONITOR-TWO-HOUSES
 MONITOR
 462
 945
-539
+542
 990
 + houses
 MONITOR-MORE-HOUSES
@@ -665,7 +665,7 @@ MONITOR-NOT-EMPTY-HOUSES
 MONITOR
 1035
 555
-1102
+1115
 600
 total
 count houses
@@ -674,10 +674,10 @@ count houses
 11
 
 MONITOR
-555
-500
-621
-545
+525
+415
+591
+460
 humans
 count humans
 0
@@ -685,25 +685,25 @@ count humans
 11
 
 SLIDER
-630
-150
-865
-183
+522
+147
+757
+180
 IPC
 IPC
 1
 100
-5
+4
 1
 1
 %
 HORIZONTAL
 
 MONITOR
-1045
-1030
-1102
-1075
+975
+1005
+1032
+1050
 built
 MONITOR-HOUSES-BUILT
 0
@@ -711,10 +711,10 @@ MONITOR-HOUSES-BUILT
 11
 
 MONITOR
-1045
-1085
-1103
-1130
+975
+1055
+1033
+1100
 bought
 MONITOR-HOUSES-BOUGHT
 0
@@ -722,36 +722,36 @@ MONITOR-HOUSES-BOUGHT
 11
 
 SLIDER
-875
-110
-1145
-143
+767
+107
+1037
+140
 DESIRED-POPULATION
 DESIRED-POPULATION
 100
 1000
-513
+1000
 1
 1
 NIL
 HORIZONTAL
 
 SWITCH
-625
-330
-832
-363
+522
+327
+755
+361
 HOMELESS-CAN-BUILD
 HOMELESS-CAN-BUILD
-0
+1
 1
 -1000
 
 SWITCH
-625
-375
-728
-408
+694
+11
+797
+44
 TRACE
 TRACE
 1
@@ -784,8 +784,8 @@ PENS
 PLOT
 555
 1005
-1030
-1210
+970
+1225
 Constructions / transactions
 NIL
 NIL
@@ -802,35 +802,35 @@ PENS
 "h bought" 1.0 0 -13840069 true "" "plot MONITOR-HOMELESS-HOUSES-BOUGHT"
 
 CHOOSER
-875
-245
-1145
-290
+768
+328
+1040
+373
 UPDATE-HOUSE-PRICE
 UPDATE-HOUSE-PRICE
 "min" "mean" "median" "max"
 1
 
 SLIDER
-875
-155
-1140
-188
+769
+148
+1039
+182
 CONSTRUCTION-TAX
 CONSTRUCTION-TAX
 1
 100
-5
+15
 1
 1
 %
 HORIZONTAL
 
 MONITOR
-855
-500
-935
-545
+825
+415
+940
+460
 max transactions
 max [transactions] of houses
 17
@@ -838,10 +838,10 @@ max [transactions] of houses
 11
 
 MONITOR
-635
-500
-727
-545
+605
+415
+697
+460
 homeless %
 (count humans with [num-houses = 0]) / (count humans) * 100
 0
@@ -849,10 +849,10 @@ homeless %
 11
 
 MONITOR
-740
-500
-842
-545
+710
+415
+812
+460
 empty houses %
 (count houses with[empty])/ (count houses) * 100
 0
@@ -860,10 +860,10 @@ empty houses %
 11
 
 PLOT
-1125
-555
-1515
-675
+1045
+1000
+1500
+1225
 percentuals
 NIL
 %
@@ -879,25 +879,25 @@ PENS
 "homeless" 1.0 0 -1184463 true "" "plot (count humans with [num-houses = 0]) / (count humans) * 100"
 
 SLIDER
-875
-305
-1145
-338
+770
+237
+1040
+270
 DEVALUATE-EMPTY-HOUSE
 DEVALUATE-EMPTY-HOUSE
 0
 5
-1
+2
 1
 1
 %
 HORIZONTAL
 
 SWITCH
-745
-375
-912
-408
+522
+367
+755
+401
 SOCIAL-HOUSES
 SOCIAL-HOUSES
 1
@@ -905,10 +905,10 @@ SOCIAL-HOUSES
 -1000
 
 PLOT
-1060
-700
-1470
-830
+1120
+605
+1500
+780
 Population per Social Status
 NIL
 NIL
@@ -927,10 +927,10 @@ PENS
 "Level 5" 1.0 0 -955883 true "" "plot count humans with [ social-status = 5 ]"
 
 PLOT
-1060
-850
-1470
-980
+1040
+790
+1500
+990
 Homeless Population per Social Status
 NIL
 NIL
@@ -949,10 +949,10 @@ PENS
 "Level 5" 1.0 0 -955883 true "" "plot count humans with [ social-status = 5 and num-houses = 0 ]"
 
 MONITOR
-1475
-700
-1532
-745
+1185
+555
+1242
+600
 1
 count humans with [ social-status = 1 ]
 0
@@ -960,10 +960,10 @@ count humans with [ social-status = 1 ]
 11
 
 MONITOR
-1475
-745
-1532
-790
+1250
+555
+1307
+600
 2
 count humans with [ social-status = 2 ]
 0
@@ -971,10 +971,10 @@ count humans with [ social-status = 2 ]
 11
 
 MONITOR
-1475
-790
-1532
-835
+1315
+555
+1372
+600
 3
 count humans with [ social-status = 3 ]
 0
@@ -982,10 +982,10 @@ count humans with [ social-status = 3 ]
 11
 
 MONITOR
-1535
-700
-1592
-745
+1380
+555
+1437
+600
 4
 count humans with [ social-status = 4 ]
 0
@@ -993,10 +993,10 @@ count humans with [ social-status = 4 ]
 11
 
 MONITOR
-1535
-745
-1592
-790
+1445
+555
+1502
+600
 5
 count humans with [ social-status = 5 ]
 0
@@ -1004,15 +1004,15 @@ count humans with [ social-status = 5 ]
 11
 
 SLIDER
-875
-340
-1145
-373
+768
+283
+1038
+316
 NEGOTIATION-POWER
 NEGOTIATION-POWER
 0
 30
-5
+4
 1
 1
 %
@@ -1024,61 +1024,6 @@ HORIZONTAL
 HOUSING (a general understanding of what the model is trying to show or explain)
 
 ## HOW IT WORKS
-
-(what rules the agents use to create the overall behavior of the model)
-
-## HOW TO USE IT
-
-(how to use the model, including a description of each of the items in the Interface tab)
-
-## THINGS TO NOTICE
-
-### Humanos
-
-* Tienen una vida entre 500 y 1000 ticks
-
-* Cada 10 ticks reciben sueldo (el SMI)
-
-* Caminan de forma aleatoria, intentando comprar casas o construyendolas
-
-* Un slider que defina el numero maximo de casas que puede tener un human (2 por defecto)
-
-* Un humano solo puede vivir en una casa al mismo tiempo, si posee mas estas no estaran ocupadas
-
-* Un humano tiene un padre o nobody
-
-* Cuando un humano muere las pertenencias pasan al hijo
-
-
-### Casas
-
-
-
-### Ofertas
-
-* Un humano puede hacer una oferta de compra  RFQ al dueño de una casa que no vive en ella
-
-    * de las x casas que tiene a distancia y, con un precio base menor que su dinero, si esta libre, la compra !prioriza la libre siempre por delante de la que tiene dueño
-
-    * si las x casas que tiene a distancia y, con un precio base menor que su dinero, todas tienen dueño, decide hacer z ofertas mediante las siguientes condiciones:
-
-        * let assumed-value ( ( max [ base-price of x ] - min [ base-price of x ] ) / SOCIAL-STATUSES ) * social-status
-        * base-price < assumed-value and money < assumed-value
-
-    * human-sender "RFQ" ( list house-id money ) donde money es base-price del
-
-* un humano puede recibir una oferta de compra RFQ de distintos humanos compradores:
-
-    * de las x ofertas recibidas, escogerá en función de distintas estrategias:
-
-        * maximizar la cantidad de dinero. El comprador que ofrezca más dinero en la primera ronda se queda la casa.
-
-        * maximiza la cantidad de dinero y el comprador es de un estátus social igual o por encima del vendedor.
-
-* un humano vendedor puede hacer una contra-oferta "OFFER" pidiendo más dinero por la casa.
-
-* Un humano puede comprar una casa que esta libre
-
 
 
 ## THINGS TO TRY
@@ -1411,6 +1356,62 @@ NetLogo 5.3.1
 @#$#@#$#@
 @#$#@#$#@
 @#$#@#$#@
+<experiments>
+  <experiment name="homeless based on social status" repetitions="1" runMetricsEveryStep="true">
+    <setup>setup</setup>
+    <go>go</go>
+    <timeLimit steps="20000"/>
+    <metric>(count houses with[empty])/ (count houses) * 100</metric>
+    <metric>(count humans with [num-houses = 0]) / (count humans) * 100</metric>
+    <enumeratedValueSet variable="CONSTRUCTION-TAX">
+      <value value="15"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="UPDATE-HOUSE-PRICE">
+      <value value="&quot;mean&quot;"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="MAX-HOUSES-IN-PROPERTY">
+      <value value="3"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="INIT-CITY-COUNCILS">
+      <value value="1"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="NEGOTIATION-POWER">
+      <value value="5"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="MIN-POPULATION">
+      <value value="50"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="IPC">
+      <value value="10"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="SMI">
+      <value value="650"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="DEVALUATE-EMPTY-HOUSE">
+      <value value="1"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="SOCIAL-HOUSES">
+      <value value="false"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="HOMELESS-CAN-BUILD">
+      <value value="false"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="TRACE">
+      <value value="false"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="INIT-HOUSES">
+      <value value="5"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="DESIRED-POPULATION">
+      <value value="1000"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="SOCIAL-STATUSES">
+      <value value="1"/>
+      <value value="2"/>
+      <value value="5"/>
+    </enumeratedValueSet>
+  </experiment>
+</experiments>
 @#$#@#$#@
 @#$#@#$#@
 default
