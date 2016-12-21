@@ -150,7 +150,7 @@ to finish_negotiation [ _house _buyer _seller ]
   ask _seller [ set expertise expertise + 1]
   ;; updates the price of the house and the transactions
   ask _house[ 
-    set base-price base-price + (base-price * (IPC * 0.01) )
+    set base-price base-price + (base-price * (TRANSACTION-TAX * 0.01) )
     set transactions transactions + 1
     ]
 end

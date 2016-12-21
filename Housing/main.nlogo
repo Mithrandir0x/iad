@@ -277,7 +277,7 @@ to kill_human [ _human ]
           ;; updates the num of houses of the son
           ask lucky-son[ set num-houses num-houses + 1]
           ;; updates the price of the house
-          set base-price base-price + (base-price * (IPC * 0.01))
+          set base-price base-price + (base-price * (TRANSACTION-TAX * 0.01))
         ]
       ]
     ]
@@ -384,7 +384,7 @@ SMI
 SMI
 1
 2000
-650
+500
 1
 1
 €
@@ -409,7 +409,7 @@ SLIDER
 522
 192
 757
-226
+225
 INIT-HOUSES
 INIT-HOUSES
 0
@@ -424,7 +424,7 @@ SLIDER
 522
 282
 754
-316
+315
 INIT-CITY-COUNCILS
 INIT-CITY-COUNCILS
 1
@@ -475,12 +475,12 @@ SLIDER
 522
 237
 757
-271
+270
 MAX-HOUSES-IN-PROPERTY
 MAX-HOUSES-IN-PROPERTY
 1
 20
-3
+4
 1
 1
 NIL
@@ -549,15 +549,15 @@ PENS
 "total" 1.0 0 -16777216 true "" "plot count humans"
 
 SLIDER
-770
-192
-1040
-225
+768
+233
+1038
+266
 SOCIAL-STATUSES
 SOCIAL-STATUSES
 1
 5
-1
+3
 1
 1
 NIL
@@ -675,29 +675,14 @@ count houses
 
 MONITOR
 525
-415
+430
 591
-460
+475
 humans
 count humans
 0
 1
 11
-
-SLIDER
-522
-147
-757
-180
-IPC
-IPC
-1
-100
-4
-1
-1
-%
-HORIZONTAL
 
 MONITOR
 975
@@ -722,15 +707,15 @@ MONITOR-HOUSES-BOUGHT
 11
 
 SLIDER
-767
-107
-1037
-140
+765
+148
+1035
+181
 DESIRED-POPULATION
 DESIRED-POPULATION
 100
 1000
-1000
+500
 1
 1
 NIL
@@ -740,10 +725,10 @@ SWITCH
 522
 327
 755
-361
+360
 HOMELESS-CAN-BUILD
 HOMELESS-CAN-BUILD
-1
+0
 1
 -1000
 
@@ -802,25 +787,25 @@ PENS
 "h bought" 1.0 0 -13840069 true "" "plot MONITOR-HOMELESS-HOUSES-BOUGHT"
 
 CHOOSER
-768
-328
-1040
-373
+767
+370
+1039
+415
 UPDATE-HOUSE-PRICE
 UPDATE-HOUSE-PRICE
 "min" "mean" "median" "max"
 1
 
 SLIDER
-769
-148
-1039
-182
+768
+190
+1038
+223
 CONSTRUCTION-TAX
 CONSTRUCTION-TAX
-1
+0
 100
-15
+2
 1
 1
 %
@@ -828,9 +813,9 @@ HORIZONTAL
 
 MONITOR
 825
-415
+430
 940
-460
+475
 max transactions
 max [transactions] of houses
 17
@@ -839,9 +824,9 @@ max [transactions] of houses
 
 MONITOR
 605
-415
+430
 697
-460
+475
 homeless %
 (count humans with [num-houses = 0]) / (count humans) * 100
 0
@@ -850,9 +835,9 @@ homeless %
 
 MONITOR
 710
-415
+430
 812
-460
+475
 empty houses %
 (count houses with[empty])/ (count houses) * 100
 0
@@ -879,15 +864,15 @@ PENS
 "homeless" 1.0 0 -1184463 true "" "plot (count humans with [num-houses = 0]) / (count humans) * 100"
 
 SLIDER
-770
-237
-1040
-270
+768
+278
+1038
+311
 DEVALUATE-EMPTY-HOUSE
 DEVALUATE-EMPTY-HOUSE
 0
 5
-2
+1
 1
 1
 %
@@ -897,7 +882,7 @@ SWITCH
 522
 367
 755
-401
+400
 SOCIAL-HOUSES
 SOCIAL-HOUSES
 1
@@ -1004,18 +989,59 @@ count humans with [ social-status = 5 ]
 11
 
 SLIDER
-768
-283
-1038
-316
+767
+325
+1037
+358
 NEGOTIATION-POWER
 NEGOTIATION-POWER
 0
 30
-4
+5
 1
 1
 %
+HORIZONTAL
+
+SLIDER
+522
+147
+757
+180
+TRANSACTION-TAX
+TRANSACTION-TAX
+0
+100
+2
+1
+1
+%
+HORIZONTAL
+
+MONITOR
+460
+1160
+535
+1205
+min
+min [money] of humans
+0
+1
+11
+
+SLIDER
+765
+108
+1035
+141
+CONSTRUCTION-BASE-PRICE
+CONSTRUCTION-BASE-PRICE
+0
+50
+15
+1
+1
+smis
 HORIZONTAL
 
 @#$#@#$#@
@@ -1355,22 +1381,28 @@ Polygon -7500403 true true 30 75 75 30 270 225 225 270
 NetLogo 5.3.1
 @#$#@#$#@
 @#$#@#$#@
+1.0
+    org.nlogo.sdm.gui.AggregateDrawing 1
+        org.nlogo.sdm.gui.ConverterFigure "attributes" "attributes" 1 "FillColor" "Color" 130 188 183 219 188 50 50
+            org.nlogo.sdm.gui.WrappedConverter "" ""
 @#$#@#$#@
 <experiments>
-  <experiment name="homeless based on social status" repetitions="1" runMetricsEveryStep="true">
+  <experiment name="social-status-easy" repetitions="1" runMetricsEveryStep="true">
     <setup>setup</setup>
     <go>go</go>
-    <timeLimit steps="20000"/>
-    <metric>(count houses with[empty])/ (count houses) * 100</metric>
+    <timeLimit steps="10000"/>
     <metric>(count humans with [num-houses = 0]) / (count humans) * 100</metric>
+    <metric>mean [money] of humans</metric>
+    <metric>median [money] of humans</metric>
+    <metric>mean [base-price] of houses</metric>
     <enumeratedValueSet variable="CONSTRUCTION-TAX">
-      <value value="15"/>
+      <value value="0"/>
     </enumeratedValueSet>
     <enumeratedValueSet variable="UPDATE-HOUSE-PRICE">
       <value value="&quot;mean&quot;"/>
     </enumeratedValueSet>
     <enumeratedValueSet variable="MAX-HOUSES-IN-PROPERTY">
-      <value value="3"/>
+      <value value="20"/>
     </enumeratedValueSet>
     <enumeratedValueSet variable="INIT-CITY-COUNCILS">
       <value value="1"/>
@@ -1381,14 +1413,11 @@ NetLogo 5.3.1
     <enumeratedValueSet variable="MIN-POPULATION">
       <value value="50"/>
     </enumeratedValueSet>
-    <enumeratedValueSet variable="IPC">
-      <value value="10"/>
-    </enumeratedValueSet>
     <enumeratedValueSet variable="SMI">
-      <value value="650"/>
+      <value value="300"/>
     </enumeratedValueSet>
     <enumeratedValueSet variable="DEVALUATE-EMPTY-HOUSE">
-      <value value="1"/>
+      <value value="2"/>
     </enumeratedValueSet>
     <enumeratedValueSet variable="SOCIAL-HOUSES">
       <value value="false"/>
@@ -1403,12 +1432,130 @@ NetLogo 5.3.1
       <value value="5"/>
     </enumeratedValueSet>
     <enumeratedValueSet variable="DESIRED-POPULATION">
-      <value value="1000"/>
+      <value value="500"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="TRANSACTION-TAX">
+      <value value="15"/>
     </enumeratedValueSet>
     <enumeratedValueSet variable="SOCIAL-STATUSES">
       <value value="1"/>
       <value value="2"/>
       <value value="5"/>
+    </enumeratedValueSet>
+  </experiment>
+  <experiment name="social-status-c" repetitions="1" runMetricsEveryStep="true">
+    <setup>setup</setup>
+    <go>go</go>
+    <timeLimit steps="10000"/>
+    <metric>(count humans with [num-houses = 0]) / (count humans) * 100</metric>
+    <metric>mean [money] of humans</metric>
+    <metric>median [money] of humans</metric>
+    <metric>mean [base-price] of houses</metric>
+    <enumeratedValueSet variable="HOMELESS-CAN-BUILD">
+      <value value="true"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="UPDATE-HOUSE-PRICE">
+      <value value="&quot;mean&quot;"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="INIT-HOUSES">
+      <value value="5"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="MAX-HOUSES-IN-PROPERTY">
+      <value value="2"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="INIT-CITY-COUNCILS">
+      <value value="1"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="TRACE">
+      <value value="false"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="MIN-POPULATION">
+      <value value="50"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="DESIRED-POPULATION">
+      <value value="500"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="CONSTRUCTION-TAX">
+      <value value="2"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="DEVALUATE-EMPTY-HOUSE">
+      <value value="1"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="TRANSACTION-TAX">
+      <value value="2"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="SOCIAL-HOUSES">
+      <value value="false"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="NEGOTIATION-POWER">
+      <value value="0"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="SOCIAL-STATUSES">
+      <value value="1"/>
+      <value value="2"/>
+      <value value="5"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="SMI">
+      <value value="1000"/>
+    </enumeratedValueSet>
+  </experiment>
+  <experiment name="negotiation-power-c" repetitions="1" runMetricsEveryStep="true">
+    <setup>setup</setup>
+    <go>go</go>
+    <timeLimit steps="10000"/>
+    <metric>(count humans with [num-houses = 0]) / (count humans) * 100</metric>
+    <metric>mean [money] of humans</metric>
+    <metric>median [money] of humans</metric>
+    <metric>mean [base-price] of houses</metric>
+    <enumeratedValueSet variable="HOMELESS-CAN-BUILD">
+      <value value="true"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="UPDATE-HOUSE-PRICE">
+      <value value="&quot;mean&quot;"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="INIT-HOUSES">
+      <value value="5"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="CONSTRUCTION-BASE-PRICE">
+      <value value="15"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="MAX-HOUSES-IN-PROPERTY">
+      <value value="4"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="INIT-CITY-COUNCILS">
+      <value value="1"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="TRACE">
+      <value value="false"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="MIN-POPULATION">
+      <value value="50"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="DESIRED-POPULATION">
+      <value value="500"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="CONSTRUCTION-TAX">
+      <value value="2"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="DEVALUATE-EMPTY-HOUSE">
+      <value value="1"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="TRANSACTION-TAX">
+      <value value="2"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="SOCIAL-HOUSES">
+      <value value="false"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="NEGOTIATION-POWER">
+      <value value="5"/>
+      <value value="10"/>
+      <value value="15"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="SOCIAL-STATUSES">
+      <value value="3"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="SMI">
+      <value value="500"/>
     </enumeratedValueSet>
   </experiment>
 </experiments>

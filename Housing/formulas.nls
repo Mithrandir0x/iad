@@ -11,6 +11,7 @@ to-report check_construction_prices
   if any? houses in-radius RADIUS
   [
     let price mean [base-price] of houses in-radius RADIUS
+    if price < CONSTRUCTION-BASE-PRICE * SMI [ set price CONSTRUCTION-BASE-PRICE * SMI]
     report price + (price * (CONSTRUCTION-TAX * 0.01))
   ]
   report [floor-price] of one-of councils
