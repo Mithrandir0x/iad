@@ -79,11 +79,35 @@ to human_behave
   
   if num-houses < MAX-HOUSES-IN-PROPERTY
   [
+    ;;let option buy_or_build
+    ;;if option = "buy"[ buy_houses ]
+    ;;if option = "build" [build_houses]
     buy_houses
     build_houses
   ]
 end
 
+to-report buy_or_build
+  let price-build check_something_to_build
+  let price-buy check_something_to_buy
+  
+  ifelse price-buy = -1
+  [;; if nothing to buy
+    ;; unless theres is something to build
+    if price-build = -1[ report "none" ]
+    report "build"
+  ]
+  [;; if something to buy
+    ;; if nothing to build, deffinitely buy
+    if price-build = -1 [ report "buy"]
+    
+    ;; if something of both do the cheapest
+    if price-build > price-buy [report "buy"]
+    report "build"
+      
+  ]
+  
+end
 
 to walk
   if money > 0
@@ -150,29 +174,34 @@ to-report buyable_houses
 end
 
 to buy_houses
-  ;;let affordable affordable_houses
-  ;; not yet
-  ;;ifelse affordable != nobody
-  ;;[
-  ;;  do_buy_house affordable
-  ;;]
-  ;;[
-  
     let buyable buyable_houses
     if buyable != nobody [
       ;; calls the mediator
       ;; add _house _who _price
       mediator_add_offer buyable  self calc_house_offer_price buyable
     ] 
-      
-    ;; supposed to be just one owner?
-    ;;  let owners [ (list owner (house who) ( calc_house_offer_price (house who) ) ) ] of buyable
-    ;;  if length owners > 0 [
-    ;;    foreach owners [
-    ;;      ; recipient sender RFQ [ house-agent price ]
-    ;;      send_message (item 0 ?) (human who) "RFQ" (list (item 1 ?) (item 2 ?))
-    ;;    ]
-    ;;  ]
-    ;;]
-  ;;]
+end
+
+
+
+;;; this function is a copy, and we do duplicate stuff, I know though but.... there is no time enough
+to-report check_something_to_build
+  if (num-houses > 0 or HOMELESS-CAN-BUILD) and num-houses < MAX-HOUSES-IN-PROPERTY
+  [
+    ;; check houses around and if there isn't any house in the current patch
+    if (any? houses in-radius RADIUS or any? councils in-radius RADIUS) and [free] of patch-here 
+    [
+      let needed check_construction_prices
+      if money > needed [ report needed ]
+    ]
+  ]
+  report -1
+end
+
+
+to-report check_something_to_buy
+  ;; returns the cheapest house around
+  let _houses  houses in-radius RADIUS with [owner != nobody and base-price < [money] of myself]
+  if any? _houses [ report min [base-price] of _houses ]
+report -1
 end

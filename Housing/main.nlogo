@@ -384,7 +384,7 @@ SMI
 SMI
 1
 2000
-500
+1000
 1
 1
 €
@@ -480,7 +480,7 @@ MAX-HOUSES-IN-PROPERTY
 MAX-HOUSES-IN-PROPERTY
 1
 20
-4
+2
 1
 1
 NIL
@@ -557,7 +557,7 @@ SOCIAL-STATUSES
 SOCIAL-STATUSES
 1
 5
-3
+1
 1
 1
 NIL
@@ -715,7 +715,7 @@ DESIRED-POPULATION
 DESIRED-POPULATION
 100
 1000
-500
+1000
 1
 1
 NIL
@@ -814,9 +814,9 @@ HORIZONTAL
 MONITOR
 825
 430
-940
+1027
 475
-max transactions
+House with max transactions
 max [transactions] of houses
 17
 1
@@ -997,7 +997,7 @@ NEGOTIATION-POWER
 NEGOTIATION-POWER
 0
 30
-5
+0
 1
 1
 %
@@ -1038,7 +1038,7 @@ CONSTRUCTION-BASE-PRICE
 CONSTRUCTION-BASE-PRICE
 0
 50
-15
+0
 1
 1
 smis
@@ -1556,6 +1556,124 @@ NetLogo 5.3.1
     </enumeratedValueSet>
     <enumeratedValueSet variable="SMI">
       <value value="500"/>
+    </enumeratedValueSet>
+  </experiment>
+  <experiment name="negotiation-power-d" repetitions="1" runMetricsEveryStep="true">
+    <setup>setup</setup>
+    <go>go</go>
+    <timeLimit steps="10000"/>
+    <metric>(count humans with [num-houses = 0]) / (count humans) * 100</metric>
+    <metric>mean [money] of humans</metric>
+    <metric>median [money] of humans</metric>
+    <metric>mean [base-price] of houses</metric>
+    <enumeratedValueSet variable="HOMELESS-CAN-BUILD">
+      <value value="true"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="UPDATE-HOUSE-PRICE">
+      <value value="&quot;mean&quot;"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="INIT-HOUSES">
+      <value value="5"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="CONSTRUCTION-BASE-PRICE">
+      <value value="15"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="MAX-HOUSES-IN-PROPERTY">
+      <value value="20"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="INIT-CITY-COUNCILS">
+      <value value="1"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="TRACE">
+      <value value="false"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="MIN-POPULATION">
+      <value value="50"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="DESIRED-POPULATION">
+      <value value="500"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="CONSTRUCTION-TAX">
+      <value value="15"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="DEVALUATE-EMPTY-HOUSE">
+      <value value="1"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="TRANSACTION-TAX">
+      <value value="10"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="SOCIAL-HOUSES">
+      <value value="false"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="NEGOTIATION-POWER">
+      <value value="5"/>
+      <value value="10"/>
+      <value value="15"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="SOCIAL-STATUSES">
+      <value value="5"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="SMI">
+      <value value="1000"/>
+    </enumeratedValueSet>
+  </experiment>
+  <experiment name="negotiation-power-d-2" repetitions="1" runMetricsEveryStep="true">
+    <setup>setup</setup>
+    <go>go</go>
+    <timeLimit steps="20000"/>
+    <metric>(count humans with [num-houses = 0]) / (count humans) * 100</metric>
+    <metric>mean [money] of humans</metric>
+    <metric>median [money] of humans</metric>
+    <metric>mean [base-price] of houses</metric>
+    <enumeratedValueSet variable="HOMELESS-CAN-BUILD">
+      <value value="true"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="UPDATE-HOUSE-PRICE">
+      <value value="&quot;mean&quot;"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="INIT-HOUSES">
+      <value value="5"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="CONSTRUCTION-BASE-PRICE">
+      <value value="15"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="MAX-HOUSES-IN-PROPERTY">
+      <value value="20"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="INIT-CITY-COUNCILS">
+      <value value="1"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="TRACE">
+      <value value="false"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="MIN-POPULATION">
+      <value value="50"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="DESIRED-POPULATION">
+      <value value="500"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="CONSTRUCTION-TAX">
+      <value value="15"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="DEVALUATE-EMPTY-HOUSE">
+      <value value="1"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="TRANSACTION-TAX">
+      <value value="10"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="SOCIAL-HOUSES">
+      <value value="false"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="NEGOTIATION-POWER">
+      <value value="5"/>
+      <value value="10"/>
+      <value value="15"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="SOCIAL-STATUSES">
+      <value value="5"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="SMI">
+      <value value="1000"/>
     </enumeratedValueSet>
   </experiment>
 </experiments>
