@@ -1,0 +1,71 @@
+
+to setup_monitors
+ set MONITOR-HOUSES-BUILT 0
+ set MONITOR-HOUSES-BOUGHT 0
+ set MONITOR-HOMELESS-HOUSES-BOUGHT 0 
+ 
+ ;; prices
+ set MONITOR-MAX-EMTPY 0
+ set MONITOR-MAX-NOT-EMTPY 0
+ set MONITOR-MEAN-EMTPY 0
+ set MONITOR-MEAN-NOT-EMPTY 0
+ set MONITOR-MIN-EMPTY 0
+ set MONITOR-MIN-NOT-EMPTY 0
+end
+
+to setup_lists
+  set LIST-CONSTRUCTION-PRICES []
+  set LIST-BUYING-PRICES []
+end
+
+to update_monitors
+  
+  set MONITOR-MAX-SAVINGS max [money] of humans
+  set MONITOR-MEAN-SAVINGS mean [money] of humans
+  set MONITOR-MEDIAN-SAVINGS median [money] of humans
+  
+  set MONITOR-HOMELESS count humans with [ num-houses = 0 ]
+  set MONITOR-ONE-HOUSE count humans with [ num-houses = 1 ]
+  set MONITOR-TWO-HOUSES count humans with [ num-houses = 2 ]
+  set MONITOR-MORE-HOUSES count humans with [ num-houses > 2 ]
+  
+  set MONITOR-EMPTY-HOUSES count houses with [ empty and owner != nobody] ;; houses with owner but noone living in
+  set MONITOR-FREE-HOUSES count houses with [ owner = nobody] ;; houses without owner
+  set MONITOR-NOT-EMPTY-HOUSES count houses with [ not empty ] ;; houses with people living there
+  
+  let empty-houses-price [base-price] of houses with [empty]
+  let not-empty-houses-price [base-price] of houses with [not empty]
+  
+  if not empty? empty-houses-price
+  [
+     set MONITOR-MAX-EMTPY max empty-houses-price
+     set MONITOR-MEAN-EMTPY mean empty-houses-price
+     set MONITOR-MIN-EMPTY min empty-houses-price
+  ]
+  
+  if not empty? not-empty-houses-price
+  [
+     set MONITOR-MAX-NOT-EMTPY max not-empty-houses-price
+     set MONITOR-MEAN-NOT-EMPTY mean not-empty-houses-price
+     set MONITOR-MIN-NOT-EMPTY min not-empty-houses-price
+  ]
+  
+end
+
+
+to monitor_new_house_built
+  set MONITOR-HOUSES-BUILT MONITOR-HOUSES-BUILT + 1
+end
+
+to monitor_new_house_bought [ homeless ]
+  if homeless [ set MONITOR-HOMELESS-HOUSES-BOUGHT MONITOR-HOMELESS-HOUSES-BOUGHT + 1 ]  
+  set MONITOR-HOUSES-BOUGHT MONITOR-HOUSES-BOUGHT + 1
+end 
+
+to new_house_built [ price ]
+  set LIST-CONSTRUCTION-PRICES lput price LIST-CONSTRUCTION-PRICES
+end 
+
+to new_house_bought [ price ]
+  set LIST-BUYING-PRICES lput price LIST-BUYING-PRICES
+end 

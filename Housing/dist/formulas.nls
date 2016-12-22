@@ -1,0 +1,90 @@
+
+to-report calc_seed_house_price [ house ]
+  ;; seed houses base price are calculated by the SMI * distance to the council of the couse
+  let pr SMI * distance [city-council] of house
+  ;; the base price could also be doubled
+  set pr pr + random pr
+  report pr
+end
+
+to-report check_construction_prices
+  if any? houses in-radius RADIUS
+  [
+    let price mean [base-price] of houses in-radius RADIUS
+    if price < CONSTRUCTION-BASE-PRICE * SMI [ set price CONSTRUCTION-BASE-PRICE * SMI]
+    report price + (price * (CONSTRUCTION-TAX * 0.01))
+  ]
+  report [floor-price] of one-of councils
+end
+
+to-report _check_construction_prices
+  let base_vacias 0
+  let base_ocupadas 0
+  
+  let houses-in-radius houses in-radius RADIUS
+  let not-empty-houses houses-in-radius with [not empty]
+  let empty-houses houses-in-radius with [empty]
+  
+  
+  ifelse count empty-houses > count not-empty-houses
+  [ ;; there are more empty houses
+    ifelse any? not-empty-houses
+    [
+      set base_vacias 0.6 * mean [base-price] of empty-houses
+      set base_ocupadas 0.4 * mean [base-price] of not-empty-houses
+    ]
+    [
+      set base_vacias mean[base-price] of empty-houses
+    ]
+  ]
+  [
+    ;; there are more not empty houses or at least the same
+    ifelse any? empty-houses
+    [
+      set base_vacias 0.4 * mean [base-price] of empty-houses
+      set base_ocupadas 0.6 * mean [base-price] of not-empty-houses
+    ]
+    [
+      set base_ocupadas mean [base-price] of not-empty-houses
+    ]
+  ]
+
+  report (base_vacias + base_ocupadas) + (base_vacias + base_ocupadas) * (CONSTRUCTION-TAX * 0.01)
+end
+
+
+
+to-report calc_owned_house_base_price [ house ]
+  let house-base-price [ base-price ] of house
+  let house-owner [ owner ] of house
+  report house-base-price + ( ( house-base-price * 0.25 ) * ( [ social-status ] of house-owner / SOCIAL-STATUSES ) )
+end
+
+to-report calc_owned_house_rfq_price [ recipient house ]
+  let house-base-price [ base-price ] of house
+  report house-base-price + ( ( house-base-price * 0.1 ) * ( [ social-status ] of recipient / SOCIAL-STATUSES ) )
+end
+
+to-report calc_house_offer_price [ house ]
+  let house-base-price [ base-price ] of house
+  report house-base-price - ( calc_differential_price house )
+end
+
+to-report calc_house_seller_price [ house ]
+  let house-base-price [ base-price ] of house
+  report house-base-price + ( calc_differential_price house )
+end
+
+to-report calc_differential_price [ house ]
+  let house-base-price [ base-price ] of house
+  ;;report ( 0.25 * ( house-base-price - min [ base-price ] of houses in-radius RADIUS ) / ( social-status + 1 ) )
+  
+  ;; the maximum displacement of the price may be 0.25
+  let base-differential 0.01 * NEGOTIATION-POWER * house-base-price / SOCIAL-STATUSES
+  ;; reports the differential based on the social status of the agent
+  report base-differential * social-status
+end
+
+to-report calc_negotiation_score [ human ]
+  report [ eloquence + expertise ] of human
+end

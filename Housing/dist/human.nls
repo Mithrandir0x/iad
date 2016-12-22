@@ -1,0 +1,207 @@
+breed[ humans human ]
+
+humans-own[
+  life ;;
+  money ;;
+  base-home ;; the house in which human lives
+  num-houses ;; total amount of houses
+  can-build ;; if the human can build, deprecated
+  social-status ;; the social status
+  father ;; the father
+  eloquence
+  expertise
+  can-procreate
+]
+
+
+to initialize_human
+  set shape "face neutral"
+  set color yellow
+  setxy random-xcor random-ycor
+  set can-build false
+  set social-status 1 + random SOCIAL-STATUSES
+  set money (SMI * random 100) * social-status
+  set life (random 500) + 500
+  set eloquence random 50
+  set expertise 0
+  set father nobody
+  set base-home nobody
+  set can-procreate true
+end
+
+to initialize_son [_father]
+  set father _father
+  set shape "face neutral"
+  set color yellow
+  setxy [xcor] of father [ycor] of father
+  set can-build false
+  
+  ;; the social status is based on father's social status
+  ;; it can increase or decrease 1
+  ifelse SOCIAL-STATUSES > 1[
+    ifelse [social-status = 1] of father
+    [ ;; social status may increase 1
+      set social-status ([social-status] of father) + random 2
+    ]
+    [
+      ifelse [social-status >= SOCIAL-STATUSES] of father
+      [ ifelse [social-status > SOCIAL-STATUSES] of father
+        [;; has to decrease
+          set social-status ([social-status] of father) - 1
+        ]
+        [
+          ;; social status may decrease 1
+          set social-status ([social-status] of father) - random 2
+        ]
+      ]
+      [;; social status may increase or decrease 1
+        set social-status ([social-status] of father) + (random 3) - 1
+        
+      ]
+    ]
+  ]
+  [
+    set social-status 1
+  ]
+  
+  set money 0.25 * [money] of father
+  set life (random 500) + 500
+  set eloquence random 50
+  set expertise 0
+  set base-home nobody
+  set can-procreate true
+end
+
+to human_behave
+  set life life - 1
+  
+  walk
+  
+  if num-houses < MAX-HOUSES-IN-PROPERTY
+  [
+    ;;let option buy_or_build
+    ;;if option = "buy"[ buy_houses ]
+    ;;if option = "build" [build_houses]
+    buy_houses
+    build_houses
+  ]
+end
+
+to-report buy_or_build
+  let price-build check_something_to_build
+  let price-buy check_something_to_buy
+  
+  ifelse price-buy = -1
+  [;; if nothing to buy
+    ;; unless theres is something to build
+    if price-build = -1[ report "none" ]
+    report "build"
+  ]
+  [;; if something to buy
+    ;; if nothing to build, deffinitely buy
+    if price-build = -1 [ report "buy"]
+    
+    ;; if something of both do the cheapest
+    if price-build > price-buy [report "buy"]
+    report "build"
+      
+  ]
+  
+end
+
+to walk
+  if money > 0
+  [
+    fd 1
+    ;; rotates?
+    if random 2 = 1
+    [ ;; where?
+      ifelse random 2 = 1
+      [ right 45 ]
+      [ left 45 ]
+    ]
+  ]
+end
+
+
+to human_update_color
+  ifelse num-houses = 0 
+  [ set color yellow ]
+  [ ifelse num-houses = 1
+    [ set color blue ]
+    [ ifelse num-houses = 2
+      [ set color magenta ]
+      [ set color black ]
+    ]
+  ]
+  ;;set color scale-color green money (max [money] of humans) (min [money] of humans)
+end
+
+to update_shape
+  ifelse money <= 0 
+  [ set shape "face sad" ]
+  [
+    ifelse num-houses = 0
+    [ set shape "face neutral"]
+    [ set shape "face happy"]
+  ]
+end
+
+
+to build_houses
+  if (num-houses > 0 or HOMELESS-CAN-BUILD) and num-houses < MAX-HOUSES-IN-PROPERTY
+  [
+    ;; check houses around and if there isn't any house in the current patch
+    if (any? houses in-radius RADIUS or any? councils in-radius RADIUS) and [free] of patch-here 
+    [
+      let needed check_construction_prices
+      if money > needed [ mediator_add_construction patch-here self needed ]
+    ]
+  ]
+end
+
+to-report affordable_houses
+  report one-of houses in-radius 5 with [owner = nobody and base-price < [money] of myself]
+end
+
+
+to-report buyable_houses
+  ;; returns the cheapest house around
+  let _houses  houses in-radius RADIUS with [owner != nobody and base-price < [money] of myself]
+  if any? _houses [ report min-one-of _houses [base-price] ]
+  report nobody
+  ;;report min-one-of ( houses in-radius RADIUS with [owner != nobody and base-price < [money] of myself] ) [ base-price ]
+end
+
+to buy_houses
+    let buyable buyable_houses
+    if buyable != nobody [
+      ;; calls the mediator
+      ;; add _house _who _price
+      mediator_add_offer buyable  self calc_house_offer_price buyable
+    ] 
+end
+
+
+
+;;; this function is a copy, and we do duplicate stuff, I know though but.... there is no time enough
+to-report check_something_to_build
+  if (num-houses > 0 or HOMELESS-CAN-BUILD) and num-houses < MAX-HOUSES-IN-PROPERTY
+  [
+    ;; check houses around and if there isn't any house in the current patch
+    if (any? houses in-radius RADIUS or any? councils in-radius RADIUS) and [free] of patch-here 
+    [
+      let needed check_construction_prices
+      if money > needed [ report needed ]
+    ]
+  ]
+  report -1
+end
+
+
+to-report check_something_to_buy
+  ;; returns the cheapest house around
+  let _houses  houses in-radius RADIUS with [owner != nobody and base-price < [money] of myself]
+  if any? _houses [ report min [base-price] of _houses ]
+report -1
+end

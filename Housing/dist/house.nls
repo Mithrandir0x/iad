@@ -1,0 +1,72 @@
+breed[ houses house ]
+
+houses-own[
+  base-price
+  owner
+  empty
+  city-council
+  transactions
+  new-price
+]
+
+
+to house_update_colors
+  ifelse owner = nobody
+  [set color orange]
+  [
+    ifelse empty
+    [ set color red]
+    [ set color green]
+  ]
+end
+
+to house_update_new_price
+  let price 0
+  if UPDATE-HOUSE-PRICE = "min" [set price min [base-price] of houses in-radius RADIUS]
+  if UPDATE-HOUSE-PRICE = "mean" [set price mean [base-price] of houses in-radius RADIUS]
+  if UPDATE-HOUSE-PRICE = "median" [set price median [base-price] of houses in-radius RADIUS]  
+  if UPDATE-HOUSE-PRICE = "max" [set price max [base-price] of houses in-radius RADIUS]  
+  
+  set new-price price
+  
+  if empty
+  [
+    ;; decreases the price if the house is alone
+    set new-price new-price - (new-price * DEVALUATE-EMPTY-HOUSE * 0.01)
+  ]
+end
+to house_swap_price
+  set base-price new-price
+end
+
+
+to initialize_house[the-patch the-owner the-price]
+  setxy [pxcor] of the-patch [pycor] of the-patch
+  set shape "house"
+  set color red
+  set owner the-owner
+  set empty true
+  set city-council nobody
+  set base-price the-price;; calc_house_base_price self
+  set transactions 0
+end
+
+
+to initialize_seed_house_of [council the-patch the-owner]
+  setxy [pxcor] of the-patch [pycor] of the-patch
+  set shape "house"
+  set owner the-owner
+  set empty true
+  set city-council council
+  set base-price calc_seed_house_price self
+  ask patch-here [ set free false]
+  set transactions 0
+  if owner != nobody[
+    set empty false
+    ;; changes made in the owner of this house
+    ask owner [ 
+      set num-houses num-houses + 1 
+      set base-home myself
+    ]
+  ]
+end
